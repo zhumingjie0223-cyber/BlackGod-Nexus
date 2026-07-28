@@ -1,26 +1,22 @@
-# TODO · 枢语驱动层 S1 — do: 第六回路
+# TODO · 逆向工具箱 nexus_reverse.mjs
 
-任务:按施工说明书"第一条"落地 S1——让枢语能下达可执行任务(不只表达情绪)。
-核心诉求:「用枢语来做任务」。S1 是后面所有执行的地基,必须先做。
+任务:把权哥发的网页逆向片段(JSVMP hook + 魔改 base64 + RC4)做成神枢的正式功能模块。
+定位:补进现有安全/逆向线(hijack 劫持工坊 / [removed] / execBrowse),将来自动分析
+加密/反爬网站时的拆解工具;公开版技术用户也用得到。
 
-范围铁律核对:S1 只动 shuyu/nexuslang.js(意识解释器),不碰词根表/引擎双侧/词库,
-故无需改 Python、无需 check-sync。只增不删。
+范围:新建独立模块 web/nexus-do/nexus_reverse.mjs + 自测,不碰 4644 行核心大文件。只增不删。
 
-- [x] 读透 nexuslang.js(290行五回路)+ 测试风格 + 确认无消费副本
-- [x] nexuslang.js:interpret() 返回值加 actions:[] 字段
-- [x] 加 parseDo() + 第六回路 do: 分派(排在 become 与 say 之间,canonical: feel→think→become→do→say→grow)
-- [x] compile() 返回值加 act:[...]
-- [x] 补测试(tests/nexuslang.test.mjs):do 单条/多条/带期望态/无参原语/与五回路共存
-- [x] 跑 npm test 全绿(原 7 + 新增)
+- [x] 读 web/nexus-do 现有模块风格(ESM export 约定)
+- [x] nexus_reverse.mjs:自定义字母表 base64 编/解码(UTF-8 安全,往返成立)
+- [x] nexus_reverse.mjs:RC4 加/解密(对称,字节级,base64 包装便于文本往返)
+- [x] nexus_reverse.mjs:JSVMP 追踪 hook 生成器
+- [x] nexus_reverse.test.mjs:base64 标准+魔改往返 + RC4 已知向量+往返 + hook 生成 + 报错分支
+- [x] node --test 10/10 全绿(RC4 教科书向量 bbf316e8d940af0ad3 验证正确)
 - [x] 提交推送 PR #86
+- [x] 归档 TODO 到 docs/done/
 
-## S1 语法(已实现)
-do: 工具名(参数) → 期望态
-- 工具名:标识符,支持点号命名空间(域.动作),如 shell / ios.remind / 静
-- 参数:括号内逗号分隔,双引号字符串自动脱壳;无括号=无参原语
-- → 期望态:可选,顶层(括号/引号外)第一个 → 之后
-- 一段枢语可多条 do:,汇入 result.actions 数组;compile 输出 act
-
-## 待权哥后续确认(不阻塞 S1,先用合理默认)
-- do: 工具名命名空间正式约定(现默认:点号分隔 域.动作)
-- S2 需要:态轴 80 值里哪几个冻结为任务运行态(待/跑/滞/成/败/弃)
+## 总结
+逆向工具箱落地:base64(可传网站魔改字母表)、RC4(对称,含 base64 包装)、JSVMP apply 追踪
+hook 生成器,全为确定性纯函数、UTF-8 安全、10 个测试全绿(含 RC4 标准向量验证)。
+独立模块 nexus_reverse.mjs,未碰核心,只增不删。后续接入 agent 动作集/hijack 工坊时
+继续走 dangerReason/确认门,本次只交付模块本体。
