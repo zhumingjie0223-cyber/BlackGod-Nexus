@@ -1,24 +1,22 @@
-# TODO — 修复 Telegram 入站：让神枢能回主人的消息（权哥截图报障）
+# TODO · 逆向工具箱 nexus_reverse.mjs
 
-现象：Telegram「路飞技术服务」机器人能主动 push（08:38→13:59 一串），但权哥回她
-「你为什么不跟我沟通」没任何回应。根因：**出站通、入站断**——Worker 只有 sendToQuan
-出站，没有接收 Telegram 回调的 webhook 路由，她根本收不到主人在 TG 里说的话。
+任务:把权哥发的网页逆向片段(JSVMP hook + 魔改 base64 + RC4)做成神枢的正式功能模块。
+定位:补进现有安全/逆向线(hijack 劫持工坊 / [removed] / execBrowse),将来自动分析
+加密/反爬网站时的拆解工具;公开版技术用户也用得到。
 
-- [x] 定位根因：全路由表核对，确认无任何 Telegram 入站 webhook（只有 sendToQuan 出站）
-- [x] 加入站路由 `POST /tg/webhook`（公开入口，不进 OWNER_TOKEN 门）+ `handleTgWebhook`
-      · 双闸自保：setWebhook 密钥(X-Telegram-Bot-Api-Secret-Token) + 主人 chat_id 白名单
-      · 幂等去重(update_id)、非文字提示、回话截断 3900、任何情况回 200 防重投
-      · 喂进 `handleTalk`（与 /talk 同路，主人全功能），回话经 sendToQuan 发回 TG
-- [x] 加 `POST /tg/setup`（系统主人专属）+ `tgSetWebhook`：一键把 webhook 注册到本 Worker
-- [x] 自愈注册 `ensureTgHook`：心跳时用「记下的真实公网地址」自动注册，主人配好密钥+部署即自通
-      （避开 cron 的 https://internal 伪地址：只认真实 web 访问记下的 origin）
-- [x] 安全归位：`/tg/setup` 纳入 SYSTEM_ONLY_PATHS（多租户实例主人不可注册系统机器人）+ 私密集合
-- [x] 测试：新增 tg_webhook.test.mjs 10/10（密钥/主人/幂等/非文字/截断/自愈注册）；
-      selftest 228/0、capsec 39/0 全绿；index.html 未动（纯后端修复）
-- [ ] 提交推送到分支
-- [ ] 告诉权哥要生效需做的一步：Cloudflare 配 `TG_WEBHOOK_SECRET` 密钥 + 部署，之后自动接通
+范围:新建独立模块 web/nexus-do/nexus_reverse.mjs + 自测,不碰 4644 行核心大文件。只增不删。
 
-## 红线
-- 入站是公开 HTTP 口，但双闸（密钥+主人 chat_id）把它牢牢锁死在主人本人；密钥未配则整条拒收，
-  绝不留无鉴权入口通进主人大脑。危险动作仍走大脑内既有 need_confirm/授权闸，本入口不放行执行。
-- 未碰词根表/编码/76.7 亿；未碰服务器/部署（代码落分支，部署由权哥侧走）。
+- [x] 读 web/nexus-do 现有模块风格(ESM export 约定)
+- [x] nexus_reverse.mjs:自定义字母表 base64 编/解码(UTF-8 安全,往返成立)
+- [x] nexus_reverse.mjs:RC4 加/解密(对称,字节级,base64 包装便于文本往返)
+- [x] nexus_reverse.mjs:JSVMP 追踪 hook 生成器
+- [x] nexus_reverse.test.mjs:base64 标准+魔改往返 + RC4 已知向量+往返 + hook 生成 + 报错分支
+- [x] node --test 10/10 全绿(RC4 教科书向量 bbf316e8d940af0ad3 验证正确)
+- [x] 提交推送 PR #86
+- [x] 归档 TODO 到 docs/done/
+
+## 总结
+逆向工具箱落地:base64(可传网站魔改字母表)、RC4(对称,含 base64 包装)、JSVMP apply 追踪
+hook 生成器,全为确定性纯函数、UTF-8 安全、10 个测试全绿(含 RC4 标准向量验证)。
+独立模块 nexus_reverse.mjs,未碰核心,只增不删。后续接入 agent 动作集/hijack 工坊时
+继续走 dangerReason/确认门,本次只交付模块本体。
