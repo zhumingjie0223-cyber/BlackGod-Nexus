@@ -117,8 +117,8 @@ final class VoiceSignCoreTests: XCTestCase {
             let o = try JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any] ?? [:]
             if o["type"] as? String == "config" {
                 let t = o["thresholds"] as? [String: Double] ?? [:]
-                XCTAssertEqual(t["accept_min_score"], thresholds.minConfidence, "配置文件与 mock 门限不一致")
-                XCTAssertEqual(t["min_margin"], thresholds.minTop2Margin)
+                XCTAssertEqual(t["min_confidence"], thresholds.minConfidence, "配置文件与 mock 门限不一致")
+                XCTAssertEqual(t["min_top2_margin"], thresholds.minTop2Margin)
                 XCTAssertEqual(t["min_hand_score"], thresholds.minHandScore)
                 continue
             }
@@ -131,13 +131,12 @@ final class VoiceSignCoreTests: XCTestCase {
             switch (expected, d) {
             case ("accept", .accepted(let c)): XCTAssertEqual(c.label, o["expected_text"] as? String, id)
             case ("retry_prompt", .retry(let m)): XCTAssertEqual(m, "没看清，请再打一次", id)
-            // 统一门控后，低手部分数走 retry_prompt；mock 里标 reject_no_speak 的只要求“不产生文本”。
-            case ("reject_no_speak", .rejectNoSpeak), ("reject_no_speak", .retry): break
+            case ("reject_no_speak", .rejectNoSpeak): break
             default: XCTFail("\(id): expected \(expected), got \(d)")
             }
             checked += 1
         }
-        XCTAssertGreaterThanOrEqual(checked, 15)
+        XCTAssertEqual(checked, 15)
     }
 
     func testBridgeDefaultOffAndOnlyDrafts() throws {
