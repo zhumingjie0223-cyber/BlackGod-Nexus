@@ -9,14 +9,14 @@
 | `ios-app/VoiceSignSpeakForMe.swift` | AVFoundation / SwiftUI | `SpeakForMeEngine` + `SpeakForMeView`（打字、常用短语、确认后才朗读） |
 | `ios-app/VoiceSignInput.swift` | Foundation | `SignInputController`：识别 → 拒识 → 只写入 SpeakForMe 草稿 |
 | `tests/ios/VoiceSignCoreTests.swift` | XCTest | 已加入 `tools/intelligence/run-tests.sh` 的 Linux 回归清单（源码 VoiceSignCore + 测试） |
-| `data/asl/sign_thresholds_v0.json` | 配置 | 拒识门限（PROVISIONAL），代码不内置数值，由 `SignRejectionThresholds.load` 读取并校验 0–1 范围 |
+| `config/gates/asl_reject_thresholds.json` | 配置 | 统一门控配置（status=provisional），代码不内置数值；schema 不符、status 不认识、缺字段、`speak_requires_user_confirm` 非 true → 拒绝启用 |
 
 `ios-app/project.yml` 以 `*.swift` 通配收录源码，新文件自动进入 App target，现有文件只改了 `tools/intelligence/run-tests.sh`（把 VoiceSignCore 与其测试加入 Linux 回归清单，任务要求）。视图尚未挂到任何导航入口（需权哥决定放哪）。
 
 ### 关键硬规则
 - ASR：`requiresOnDeviceRecognition = true`；`supportsOnDeviceRecognition == false`、语言非 zh-CN/en-US、识别器不存在/不可用 → 状态 `.refused(原因)`，不启动，**绝不回落服务器**。
 - 代说：`idle → draft → confirmed → speaking → idle`。`beginSpeaking()` 只在 `confirmed` 通过，否则抛 `notConfirmed` 并写审计 `speak_rejected`。确认时文本须与草稿一致；改草稿即失效；念完需重新确认。
-- 手语：门限从 `data/asl/sign_thresholds_v0.json` 读取，**暂定**：置信度 ≥ 0.85、top1−top2 ≥ 0.15、手部检测 ≥ 0.5。手部不足或标签不在词表/字母表 → `rejectNoSpeak`；置信度/差距不足 → “没看清，请再打一次”；均不产生文本。通过者只进 draft。
+- 手语：门限从 `config/gates/asl_reject_thresholds.json` 读取（`min_confidence` 0.85、`min_top2_margin` 0.15、`min_hand_score` 0.5，暂定）。三项任一缺失或低于下限 → retry_prompt“没看清，请再打一次”；标签不在词表/字母表 → `rejectNoSpeak`；均不产生文本。通过者只进 draft。
 - 功能开关 `VoiceSignFeatureFlags.signToSpeechDefault = false`，`SignGateStatus` 默认 `NOT_READY`；ASL 门控 PASS 前不得开启。
 
 ## 门控对应

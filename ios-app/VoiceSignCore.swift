@@ -140,28 +140,47 @@ enum SignDecision: Equatable, Sendable {
     case accepted(SignCandidate)
     /// 置信度不足或前两名太接近：提示重打，不产生文本。
     case retry(String)
-    /// 未检测到手 / 标签不在词表：直接拒识，不产生文本也不提示具体内容。
+    /// 标签不在词表：直接拒识，不产生文本。
     case rejectNoSpeak(String)
     static let retryMessage = "没看清，请再打一次"
 }
 
 /// 拒识门限（可配置）。
 /// 暂定值：置信度 ≥ 0.85、top1-top2 ≥ 0.15、手部检测 ≥ 0.5 —— 待 ASL 门控标定后再定，勿当作已验证参数。
-/// 门限从独立配置文件读取（data/asl/sign_thresholds_v0.json），代码中不内置数值。
+/// 门限从统一门控配置 config/gates/asl_reject_thresholds.json 读取，代码中不内置数值。
+/// 当前 status 为 provisional（暂定），待 ASL 门控标定。
 struct SignRejectionThresholds: Codable, Equatable, Sendable {
+    static let expectedSchema = "blackgod.asl_reject_thresholds"
+    static let knownStatuses: Set<String> = ["provisional", "calibrated"]
+    static let configRelativePath = "config/gates/asl_reject_thresholds.json"
+
+    var schema: String
+    var version: String
+    var status: String
     var minConfidence: Double
-    var minMargin: Double
+    var minTop2Margin: Double
     var minHandScore: Double
+    var onReject: String
+    var speakRequiresUserConfirm: Bool
 
     enum CodingKeys: String, CodingKey {
-        case minConfidence = "min_confidence", minMargin = "min_margin", minHandScore = "min_hand_score"
+        case schema, version, status
+        case minConfidence = "min_confidence", minTop2Margin = "min_top2_margin", minHandScore = "min_hand_score"
+        case onReject = "on_reject", speakRequiresUserConfirm = "speak_requires_user_confirm"
     }
 
-    enum LoadError: Error, Equatable { case outOfRange }
+    enum LoadError: Error, Equatable {
+        case wrongSchema, unknownStatus, confirmNotRequired, unsupportedOnReject, outOfRange
+    }
 
+    /// 解析并校验；任何不合规（缺字段、schema/status 不认识、speak_requires_user_confirm != true）都抛错 → 拒绝启用。
     static func load(from data: Data) throws -> SignRejectionThresholds {
         let t = try JSONDecoder().decode(SignRejectionThresholds.self, from: data)
-        let ok = [t.minConfidence, t.minMargin, t.minHandScore].allSatisfy { $0.isFinite && $0 >= 0 && $0 <= 1 }
+        guard t.schema == expectedSchema else { throw LoadError.wrongSchema }
+        guard knownStatuses.contains(t.status) else { throw LoadError.unknownStatus }
+        guard t.speakRequiresUserConfirm else { throw LoadError.confirmNotRequired }
+        guard t.onReject == "retry_prompt" else { throw LoadError.unsupportedOnReject }
+        let ok = [t.minConfidence, t.minTop2Margin, t.minHandScore].allSatisfy { $0.isFinite && $0 >= 0 && $0 <= 1 }
         guard ok else { throw LoadError.outOfRange }
         return t
     }
@@ -172,20 +191,20 @@ struct SignRejectionGate: Sendable {
     /// 允许的标签集合（字母表 + 词表）；nil 表示不检查。
     var vocabulary: Set<String>? = nil
 
-    func decide(_ candidates: [SignCandidate], handScore: Double = 1.0) -> SignDecision {
-        guard handScore.isFinite, handScore >= thresholds.minHandScore else {
-            return .rejectNoSpeak("未检测到清晰的手部")
-        }
+    /// 置信度 / top1-top2 差距 / 手部检测 任一缺失或低于下限 → retry_prompt（不产生文本）。
+    /// 标签不在词表 → rejectNoSpeak（也不产生文本）。
+    func decide(_ candidates: [SignCandidate], handScore: Double?) -> SignDecision {
+        let retry = SignDecision.retry(SignDecision.retryMessage)
+        guard let hand = handScore, hand.isFinite, hand >= thresholds.minHandScore else { return retry }
         let s = candidates.sorted { $0.confidence > $1.confidence }
-        guard let top1 = s.first else { return .retry(SignDecision.retryMessage) }
-        if let v = vocabulary,
-           !top1.label.split(separator: " ").allSatisfy({ v.contains(String($0)) }) || top1.label.isEmpty { return .rejectNoSpeak("不在词表内") }
-        guard top1.confidence.isFinite, top1.confidence >= thresholds.minConfidence else {
-            return .retry(SignDecision.retryMessage)
+        guard let top1 = s.first, top1.confidence.isFinite, top1.confidence >= thresholds.minConfidence else {
+            return retry
         }
         let second = s.count > 1 ? s[1].confidence : 0
-        guard top1.confidence - second >= thresholds.minMargin - 1e-9 else {
-            return .retry(SignDecision.retryMessage)
+        guard second.isFinite, top1.confidence - second >= thresholds.minTop2Margin - 1e-9 else { return retry }
+        if let v = vocabulary,
+           top1.label.isEmpty || !top1.label.split(separator: " ").allSatisfy({ v.contains(String($0)) }) {
+            return .rejectNoSpeak("不在词表内")
         }
         return .accepted(top1)
     }
@@ -291,9 +310,9 @@ struct SignToSpeakBridge {
     var gateStatus: SignGateStatus = .notReady
 
     /// 识别结果只会进入 draft；返回给 UI 的提示。绝不调用 beginSpeaking。
-    func route(_ candidates: [SignCandidate], handScore: Double,
+    func route(_ candidates: [SignCandidate], handScore: Double?,
                into machine: inout SpeakForMeMachine) -> String {
-        guard enabled, gateStatus == .pass else { return "手语代说未开启（ASL 门控：\(gateStatus.rawValue)）" }
+        guard enabled, gateStatus == .pass, gate.thresholds.speakRequiresUserConfirm else { return "手语代说未开启（ASL 门控：\(gateStatus.rawValue)）" }
         switch gate.decide(candidates, handScore: handScore) {
         case .retry(let msg), .rejectNoSpeak(let msg): return msg
         case .accepted(let c):

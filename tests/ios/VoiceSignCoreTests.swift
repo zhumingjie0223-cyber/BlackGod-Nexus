@@ -12,7 +12,7 @@ final class VoiceSignCoreTests: XCTestCase {
         try Data(contentsOf: repoRoot.appendingPathComponent("data/asl/\(name)"))
     }
     static func thresholds() throws -> SignRejectionThresholds {
-        try SignRejectionThresholds.load(from: asl("sign_thresholds_v0.json"))
+        try SignRejectionThresholds.load(from: Data(contentsOf: repoRoot.appendingPathComponent(SignRejectionThresholds.configRelativePath)))
     }
 
     func testOnDevicePolicy() {
@@ -64,11 +64,38 @@ final class VoiceSignCoreTests: XCTestCase {
         XCTAssertThrowsError(try m.setDraft("   ", source: .typed))
     }
 
-    func testThresholdConfigLoadsAndValidates() throws {
+    static let canonical = #"{"schema":"blackgod.asl_reject_thresholds","version":"0.1-provisional","status":"provisional","min_confidence":0.85,"min_top2_margin":0.15,"min_hand_score":0.5,"on_reject":"retry_prompt","speak_requires_user_confirm":true}"#
+
+    func testGateConfigFileIsByteExactAndLoads() throws {
+        let raw = try Data(contentsOf: Self.repoRoot.appendingPathComponent(SignRejectionThresholds.configRelativePath))
+        XCTAssertEqual(raw, Data(Self.canonical.utf8), "配置须逐字节一致且无末尾换行")
         let t = try Self.thresholds()
-        XCTAssertEqual(t, SignRejectionThresholds(minConfidence: 0.85, minMargin: 0.15, minHandScore: 0.5))
-        XCTAssertThrowsError(try SignRejectionThresholds.load(from: Data(#"{"min_confidence":1.5,"min_margin":0.1,"min_hand_score":0.5}"#.utf8)))
-        XCTAssertThrowsError(try SignRejectionThresholds.load(from: Data(#"{"min_confidence":0.9}"#.utf8)))
+        XCTAssertEqual(t.minConfidence, 0.85); XCTAssertEqual(t.minTop2Margin, 0.15); XCTAssertEqual(t.minHandScore, 0.5)
+        XCTAssertEqual(t.status, "provisional"); XCTAssertTrue(t.speakRequiresUserConfirm)
+    }
+
+    func testGateConfigRefusesUnsafeOrUnknown() {
+        func variant(_ from: String, _ to: String) -> Data { Data(Self.canonical.replacingOccurrences(of: from, with: to).utf8) }
+        XCTAssertThrowsError(try SignRejectionThresholds.load(from: variant(#""speak_requires_user_confirm":true"#, #""speak_requires_user_confirm":false"#)))
+        XCTAssertThrowsError(try SignRejectionThresholds.load(from: variant(#""status":"provisional""#, #""status":"whatever""#)))
+        XCTAssertThrowsError(try SignRejectionThresholds.load(from: variant(#""schema":"blackgod.asl_reject_thresholds""#, #""schema":"x""#)))
+        XCTAssertThrowsError(try SignRejectionThresholds.load(from: variant(#","min_hand_score":0.5"#, "")), "配置缺字段拒绝启用")
+        XCTAssertThrowsError(try SignRejectionThresholds.load(from: variant(#""min_confidence":0.85"#, #""min_confidence":1.5"#)))
+    }
+
+    /// 三项任一缺失或低于下限 → retry_prompt。
+    func testMissingOrLowItemsGoToRetryPrompt() throws {
+        let gate = SignRejectionGate(thresholds: try Self.thresholds())
+        let retry = SignDecision.retry("没看清，请再打一次")
+        let good = [SignCandidate(label: "A", confidence: 0.95), SignCandidate(label: "S", confidence: 0.03)]
+        XCTAssertEqual(gate.decide(good, handScore: 0.9), .accepted(good[0]))
+        XCTAssertEqual(gate.decide(good, handScore: nil), retry, "手部分数缺失")
+        XCTAssertEqual(gate.decide([], handScore: 0.9), retry, "置信度缺失")
+        XCTAssertEqual(gate.decide([SignCandidate(label: "A", confidence: .nan)], handScore: 0.9), retry)
+        XCTAssertEqual(gate.decide([good[0], SignCandidate(label: "S", confidence: .nan)], handScore: 0.9), retry, "top2 缺失/无效")
+        XCTAssertEqual(gate.decide(good, handScore: 0.49), retry)
+        XCTAssertEqual(gate.decide([SignCandidate(label: "A", confidence: 0.84)], handScore: 0.9), retry)
+        XCTAssertEqual(gate.decide([SignCandidate(label: "A", confidence: 0.9), SignCandidate(label: "S", confidence: 0.8)], handScore: 0.9), retry)
     }
 
     func loadVocabulary() throws -> Set<String> {
@@ -91,7 +118,7 @@ final class VoiceSignCoreTests: XCTestCase {
             if o["type"] as? String == "config" {
                 let t = o["thresholds"] as? [String: Double] ?? [:]
                 XCTAssertEqual(t["accept_min_score"], thresholds.minConfidence, "配置文件与 mock 门限不一致")
-                XCTAssertEqual(t["min_margin"], thresholds.minMargin)
+                XCTAssertEqual(t["min_margin"], thresholds.minTop2Margin)
                 XCTAssertEqual(t["min_hand_score"], thresholds.minHandScore)
                 continue
             }
@@ -99,12 +126,13 @@ final class VoiceSignCoreTests: XCTestCase {
             let cands = (o["top_k"] as? [[String: Any]] ?? []).map {
                 SignCandidate(label: $0["label"] as? String ?? "", confidence: ($0["score"] as? NSNumber)?.doubleValue ?? 0)
             }
-            let d = gate.decide(cands, handScore: (o["hand_score"] as? NSNumber)?.doubleValue ?? 0)
+            let d = gate.decide(cands, handScore: (o["hand_score"] as? NSNumber)?.doubleValue)
             let expected = o["expected_action"] as? String ?? ""
             switch (expected, d) {
             case ("accept", .accepted(let c)): XCTAssertEqual(c.label, o["expected_text"] as? String, id)
             case ("retry_prompt", .retry(let m)): XCTAssertEqual(m, "没看清，请再打一次", id)
-            case ("reject_no_speak", .rejectNoSpeak): break
+            // 统一门控后，低手部分数走 retry_prompt；mock 里标 reject_no_speak 的只要求“不产生文本”。
+            case ("reject_no_speak", .rejectNoSpeak), ("reject_no_speak", .retry): break
             default: XCTFail("\(id): expected \(expected), got \(d)")
             }
             checked += 1
