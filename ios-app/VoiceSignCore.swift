@@ -191,21 +191,23 @@ struct SignRejectionGate: Sendable {
     /// 允许的标签集合（字母表 + 词表）；nil 表示不检查。
     var vocabulary: Set<String>? = nil
 
-    /// 置信度 / top1-top2 差距 / 手部检测 任一缺失或低于下限 → retry_prompt（不产生文本）。
-    /// 标签不在词表 → rejectNoSpeak（也不产生文本）。
+    /// 判定顺序（与 ASL 数据约定一致）：
+    /// 1. 手部分数缺失或低于下限 → retry_prompt
+    /// 2. top1 标签不在词表/字母表 → reject_no_speak
+    /// 3. 置信度或 top1-top2 分差缺失/低于下限 → retry_prompt
+    /// 均不产生文本。
     func decide(_ candidates: [SignCandidate], handScore: Double?) -> SignDecision {
         let retry = SignDecision.retry(SignDecision.retryMessage)
         guard let hand = handScore, hand.isFinite, hand >= thresholds.minHandScore else { return retry }
         let s = candidates.sorted { $0.confidence > $1.confidence }
-        guard let top1 = s.first, top1.confidence.isFinite, top1.confidence >= thresholds.minConfidence else {
-            return retry
-        }
-        let second = s.count > 1 ? s[1].confidence : 0
-        guard second.isFinite, top1.confidence - second >= thresholds.minTop2Margin - 1e-9 else { return retry }
+        guard let top1 = s.first else { return retry }
         if let v = vocabulary,
            top1.label.isEmpty || !top1.label.split(separator: " ").allSatisfy({ v.contains(String($0)) }) {
             return .rejectNoSpeak("不在词表内")
         }
+        guard top1.confidence.isFinite, top1.confidence >= thresholds.minConfidence else { return retry }
+        let second = s.count > 1 ? s[1].confidence : 0
+        guard second.isFinite, top1.confidence - second >= thresholds.minTop2Margin - 1e-9 else { return retry }
         return .accepted(top1)
     }
 }

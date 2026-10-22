@@ -16,7 +16,7 @@
 ### 关键硬规则
 - ASR：`requiresOnDeviceRecognition = true`；`supportsOnDeviceRecognition == false`、语言非 zh-CN/en-US、识别器不存在/不可用 → 状态 `.refused(原因)`，不启动，**绝不回落服务器**。
 - 代说：`idle → draft → confirmed → speaking → idle`。`beginSpeaking()` 只在 `confirmed` 通过，否则抛 `notConfirmed` 并写审计 `speak_rejected`。确认时文本须与草稿一致；改草稿即失效；念完需重新确认。
-- 手语：门限从 `config/gates/asl_reject_thresholds.json` 读取（`min_confidence` 0.85、`min_top2_margin` 0.15、`min_hand_score` 0.5，暂定）。三项任一缺失或低于下限 → retry_prompt“没看清，请再打一次”；标签不在词表/字母表 → `rejectNoSpeak`；均不产生文本。通过者只进 draft。
+- 手语：门限从 `config/gates/asl_reject_thresholds.json` 读取（`min_confidence` 0.85、`min_top2_margin` 0.15、`min_hand_score` 0.5，暂定）。判定顺序：手部分数缺失/偏低 → retry_prompt；标签不在词表/字母表 → reject_no_speak；置信度或分差缺失/偏低 → retry_prompt“没看清，请再打一次”；均不产生文本。通过者只进 draft。
 - 功能开关 `VoiceSignFeatureFlags.signToSpeechDefault = false`，`SignGateStatus` 默认 `NOT_READY`；ASL 门控 PASS 前不得开启。
 
 ## 门控对应

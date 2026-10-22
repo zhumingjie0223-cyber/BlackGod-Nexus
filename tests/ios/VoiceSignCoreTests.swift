@@ -137,6 +137,12 @@ final class VoiceSignCoreTests: XCTestCase {
             checked += 1
         }
         XCTAssertEqual(checked, 15)
+
+        // 内联补充（建议数据侧补为 m16）：不在词表 + 手部够 + 置信度偏低 → reject_no_speak
+        let m16 = [SignCandidate(label: "computer", confidence: 0.6), SignCandidate(label: "hello", confidence: 0.3)]
+        XCTAssertEqual(gate.decide(m16, handScore: 0.9), .rejectNoSpeak("不在词表内"))
+        // 手部偏低优先于词表：不在词表 + 手部低 → retry_prompt
+        XCTAssertEqual(gate.decide(m16, handScore: 0.3), .retry(SignDecision.retryMessage))
     }
 
     func testBridgeDefaultOffAndOnlyDrafts() throws {
