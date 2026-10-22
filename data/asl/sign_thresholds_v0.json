@@ -1,0 +1,8 @@
+{
+  "version": "0.1",
+  "status": "PROVISIONAL",
+  "note": "暂定门限，待 ASL 门控标定；未标定前手语代说保持关闭",
+  "min_confidence": 0.85,
+  "min_margin": 0.15,
+  "min_hand_score": 0.5
+}
