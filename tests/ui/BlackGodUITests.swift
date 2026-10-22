@@ -370,7 +370,17 @@ final class BlackGodUITests: XCTestCase {
         let cancel = app.buttons["oauth.cancel"]
         XCTAssertTrue(cancel.waitForExistence(timeout: 10))
         XCTAssertFalse(login.isEnabled)
-        if !cancel.isHittable { app.swipeUp() }
+        // 「取消登录」位于设备验证码卡片下方，同样会落在底部「保存并使用」栏之下；isHittable 仍可能为真，
+        // 点击会被保存栏吞掉。与登录按钮一样先上推到保存栏之上再点。
+        reveal(cancel, in: app)
+        for _ in 0..<6 where saveBar.exists && cancel.frame.maxY > saveBar.frame.minY - 8 {
+            let scroll = app.scrollViews.firstMatch
+            scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+                .press(forDuration: 0.05, thenDragTo: scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)))
+            settle(cancel)
+        }
+        if saveBar.exists { XCTAssertLessThan(cancel.frame.maxY, saveBar.frame.minY, "取消登录按钮仍被底部保存栏遮挡") }
+        settle(cancel)
         cancel.tap()
         let status = app.staticTexts["oauth.status"]
         expectation(for: NSPredicate(format: "label == %@", "已取消登录。"), evaluatedWith: status)
