@@ -30,7 +30,8 @@ sources=(NexusIntent NexusIntentRegression NexusRecall NexusEvidenceAudit NexusR
     NexusSkills NexusBuiltinSkills NexusSessionLibrary NexusDataVault NexusRecoveryPolicy
     NexusCognitiveControl NexusSelfContinuity NexusTaskService NexusSandboxTools NexusLinuxTool NexusWorkspaceIdentity NexusShuyu
     NexusLiveExecution NexusSkillPractice NexusEvaluation NexusPresence NexusRuntime
-    NexusOnDeviceAgent NexusRecovery NexusAutonomy NexusPermissions NexusApproval NexusTaskContract NexusRunMetrics ChatViewModel VoiceSignCore)
+    NexusOnDeviceAgent NexusRecovery NexusAutonomy NexusPermissions NexusApproval NexusTaskContract NexusRunMetrics ChatViewModel VoiceSignCore
+    NexusSkillMarket)
 for source in "${sources[@]}"; do
     cp "$repo_dir/ios-app/$source.swift" "$scratch_dir/Sources/$source.swift"
 done
