@@ -5,7 +5,10 @@ import XCTest
 final class NexusOnDeviceAgentTests: XCTestCase {
     struct Case: Decodable { let name: String; let req: NexusOnDeviceRequest; let route: NexusOnDeviceRoute; let leaves: Bool }
 
-    private var root: String { ProcessInfo.processInfo.environment["BLACK_GOD_REPO_ROOT"] ?? FileManager.default.currentDirectoryPath }
+    private var root: String {
+        if let r = ProcessInfo.processInfo.environment["BLACK_GOD_REPO_ROOT"] { return r }
+        return URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().path
+    }
 
     private func thresholds() throws -> NexusRejectThresholds {
         try NexusRejectThresholds.load(from: URL(fileURLWithPath: root + "/config/gates/asl_reject_thresholds.json"))
