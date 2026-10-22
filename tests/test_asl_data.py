@@ -63,9 +63,11 @@ def test_mock_schema_and_rules():
         top, margin = k[0], k[0]["score"] - k[1]["score"]
         known = (top["label"] in alpha if r["type"] == "letter" else
                  top["label"] in vocab if r["type"] == "word" else all(p in vocab for p in top["label"].split()))
-        if r["hand_score"] < t["min_hand_score"] or not known:
+        if r["hand_score"] < t["min_hand_score"]:
+            exp = "retry_prompt"
+        elif not known:
             exp = "reject_no_speak"
-        elif top["score"] >= t["accept_min_score"] and margin >= t["min_margin"] - 1e-9:
+        elif top["score"] >= t["min_confidence"] and margin >= t["min_top2_margin"] - 1e-9:
             exp = "accept"
         else:
             exp = "retry_prompt"
