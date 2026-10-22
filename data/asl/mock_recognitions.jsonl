@@ -14,3 +14,4 @@
 {"MOCK": true, "sample_id": "m13", "type": "sequence", "top_k": [{"label": "hello please", "score": 0.89}, {"label": "hello yes", "score": 0.05}], "hand_score": 0.92, "frames": 80, "expected_action": "accept", "expected_text": "hello please"}
 {"MOCK": true, "sample_id": "m14", "type": "letter", "top_k": [{"label": "K", "score": 0.5}, {"label": "V", "score": 0.48}], "hand_score": 0.9, "frames": 10, "expected_action": "retry_prompt", "expected_text": "没看清，请再打一次"}
 {"MOCK": true, "sample_id": "m15", "type": "letter", "top_k": [{"label": "G", "score": 0.87}, {"label": "H", "score": 0.75}], "hand_score": 0.9, "frames": 11, "expected_action": "retry_prompt", "expected_text": "没看清，请再打一次"}
+{"MOCK": true, "sample_id": "m16", "type": "word", "top_k": [{"label": "computer", "score": 0.6}, {"label": "hello", "score": 0.3}], "hand_score": 0.9, "frames": 30, "expected_action": "reject_no_speak", "expected_text": ""}
