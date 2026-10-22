@@ -1,160 +1,187 @@
-# Black God · 神枢 Nexus
+<div align="center">
 
-懂你生活工作的智能助理，采用 SwiftUI，最低支持 iOS 17。App Store 当前公开版本为 [1.2.1](https://apps.apple.com/app/id6809828368)（2026-09-21 发布，2026-09-24 核实），使用 iPhone 设备族，在 iPad 上以兼容模式运行。
+<img src="docs/assets/banner.png" alt="Black God · 神枢 Nexus" width="100%" />
 
-1.3.0（18）发布候选强化沙箱：硬配额、工作区读写工具、受控 HTTPS 抓取；并含一等沙箱页、多会话、共享任务与数据保险库。完整真机／模型验收仍待完成，尚未上架本轮改动。当前交付门槛见 [工业级验收门槛](docs/quality/工业级验收门槛.md)。
+<h3>🖐️ 用手语指挥 AI 助手</h3>
+<p><i>Command your AI assistant — in your own language, on your own device.</i></p>
 
-当前源码开发版本为 **1.4.0（24）**，新增规划前意图卡、本地多来源召回、逐步证据指针、对象与命令授权、写入备份／恢复、可选意图模型分工及只读网页检索。原有光球、卷帘和自我文案未作为本次升级内容。开发状态、验证范围和待验收项见 [意图与证据升级说明](docs/architecture/意图与证据执行升级.md)，不代表商店版本已更新。
+<p>
+  <a href="https://apps.apple.com/cn/app/blackgod/id6809828368"><img alt="Download on the App Store" src="https://img.shields.io/badge/App_Store-下载_Download-0b0f0d?style=for-the-badge&logo=apple&logoColor=34d399&labelColor=000000" /></a>
+</p>
+<p>
+  <img alt="iOS 17+" src="https://img.shields.io/badge/iOS-17%2B-10b981?style=flat-square&logo=apple&logoColor=white&labelColor=0b0f0d" />
+  <img alt="Swift" src="https://img.shields.io/badge/Swift-SwiftUI-10b981?style=flat-square&logo=swift&logoColor=white&labelColor=0b0f0d" />
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-10b981?style=flat-square&labelColor=0b0f0d" /></a>
+  <img alt="Zero backend" src="https://img.shields.io/badge/Backend-None-10b981?style=flat-square&labelColor=0b0f0d" />
+  <img alt="Keys in Keychain" src="https://img.shields.io/badge/Keys-iOS_Keychain-10b981?style=flat-square&logo=letsencrypt&logoColor=white&labelColor=0b0f0d" />
+</p>
 
-Linux 可在仓库根运行 `make test-intelligence`，实际编译聊天、快捷指令、治理与执行入口，当前完整回归259项通过；首次安装与适配范围见 [核心回归说明](tools/intelligence/README.md)。原生 iOS、界面、设备本地向量模型与真机仍须 Xcode 验证。监测页“50句意图固定回归”离线核对预置对象／工具标签，不执行工具、不调用模型；标签待独立人工核对。
+<b>中文</b> · <a href="#-english">English</a>
 
-![Black God](web/logo.png)
+</div>
 
-## 当前架构
+---
 
-- **Black God** 是产品品牌，**神枢 Nexus** 是原生客户端和任务运行时，助手身份为 Black God AI。
-- **原生 iOS 客户端**位于 `ios-app/`：对话界面、流式模型请求、配置、任务事件、工具调度与本地存储都在此目录维护。
-- **模型连接**由用户配置服务商密钥，客户端直接向所配置的模型服务商发送请求。密钥保存在 iOS Keychain；发送请求时会用于向对应服务商鉴权。
-- **本地数据**包括聊天记录、记忆和任务检查点。使用模型时，相关对话和上下文会发送给所选服务商，具体数据处理见应用内隐私政策。
-- **枢语 Shuyu**以 `shuyu/` 为权威源。词汇引擎与执行方言资源已随 iOS 应用内置，使用 JavaScriptCore 本地运行，并通过 shuyu / shuyu_execute 接入聊天和快捷指令；无需部署 Worker 或在手机安装 Python。
+## 🜂 这是什么
 
-早期 Cloudflare Workers / Durable Object 服务和网页工作台属于历史架构。当前分支已没有 `web/nexus-do/`，旧文档中的该路径、部署命令和测试数量不能作为当前发布步骤。
+**Black God（神枢 Nexus）** 是一款已上架 App Store 的 iOS AI 助手。它不绑定任何一家模型：你带上自己的密钥，接入 Claude、OpenAI、Gemini、OpenRouter 等服务商，在一部 iPhone 上完成 **对话、任务技能、长期记忆，以及本机 Linux 执行环境** 中的实际操作。
 
-## 本地构建
+> **纯本机 · 零后端 · 密钥自备**
+> 应用直接连接你所选择的模型服务商，开发者不运营任何中转服务器；密钥只保存在本机 iOS Keychain。
 
-在 Apple Silicon Mac 上安装 Xcode、iOS SDK 和构建工具：
+<table>
+<tr>
+<td width="25%" align="center">💬<br/><b>对话</b><br/><sub>多服务商、流式回复、多会话</sub></td>
+<td width="25%" align="center">🧩<br/><b>任务技能</b><br/><sub>可保存、修订、演练的技能</sub></td>
+<td width="25%" align="center">🧠<br/><b>长期记忆</b><br/><sub>由你确认、修正、删除</sub></td>
+<td width="25%" align="center">🐧<br/><b>本机 Linux</b><br/><sub>应用内 Alpine 沙箱执行</sub></td>
+</tr>
+</table>
+
+---
+
+## 🌒 开发中：面向聋哑人的双向沟通 Agent
+
+> 🚧 **开发中（In Development）** —— 以下能力尚未包含在 App Store 当前版本中，功能范围以正式发布说明为准。
+
+我们正在为听障与言语障碍用户打造一个**双向沟通助手**：
+
+| 方向 | 能力 | 说明 |
+|---|---|---|
+| 👂 → 👁️ 听 | **语音转大字幕（ASR）** | 把对方说的话实时转成高对比度大字幕，看得清、跟得上 |
+| ✍️ → 🗣️ 说 | **打字 / 手语 → 语音代说（TTS）** | 用户输入的文字或识别出的手语，由手机朗读给对方听 |
+| 🖐️ 识别 | **手语识别：指拼 + 词表** | 识别手指字母拼写与预设词表内的手语词汇 |
+
+> ⚠️ **能力边界**：手语识别仅覆盖 **指拼（fingerspelling）与限定词表**，**不是通用手语翻译**，也不提供通用 ASL 翻译。请勿据此对外宣传为"通用手语翻译"。
+
+---
+
+## ✨ 功能模块
+
+| 模块 | 能力 | 状态 |
+|---|---|---|
+| 🔌 **多模型连接** | Anthropic / Claude、OpenAI、Google Gemini、OpenRouter、DeepSeek、xAI / Grok、Moonshot / Kimi、智谱 GLM、阿里云百炼、腾讯混元等预设，另支持自定义 HTTPS 接口；协议覆盖 Anthropic Messages、OpenAI Chat Completions / Responses、Gemini generateContent | ✅ |
+| 🔐 **账号与密钥** | 每个连接独立保存密钥于 Keychain；OpenRouter 支持 OAuth 登录 | ✅ |
+| 💬 **对话** | 流式回复、停止 / 重试、多会话管理、对话清理 | ✅ |
+| 🧭 **任务执行** | 先规划再执行，逐步记录证据，模型复核遗漏与矛盾；请求次数有上限，失败不会标为成功 | ✅ |
+| 🧩 **任务技能** | 用户确认保存的技能，可检索、修订、恢复历史版本，内置技能可本地演练 | ✅ |
+| 🧠 **长期记忆** | 仅保存用户明确确认的内容，可修正和删除；模型推断不会自动成为"事实" | ✅ |
+| 🐧 **Linux 沙箱** | 应用内 Alpine 环境运行 Shell 命令，独立工作区、超时与输出上限，执行过程实时直播 | 🧪 实验功能 |
+| ⚡ **快捷指令** | 通过 App Intents 从系统快捷指令调用 | ✅ |
+| 🔣 **枢语 Shuyu** | 为 Black God 定制的指令语言引擎，JavaScriptCore 本地运行 | ✅ |
+| 🤟 **无障碍沟通 Agent** | ASR 大字幕 · TTS 代说 · 手语指拼 / 词表识别 | 🚧 开发中 |
+
+> 💡 `shuyu/` 目录是 **枢语（Shuyu / Pivot-Lang）** 引擎，与"手语"同音但是两个不同项目，请勿混淆。
+
+---
+
+## 🛠️ 构建
+
+### 环境要求
+
+- Apple Silicon Mac + Xcode（含 iOS SDK）
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) 等构建工具
+- 首次生成运行时镜像需要联网（下载固定版本的 Alpine 与 Meson，并校验 SHA256）
 
 ```bash
 brew install xcodegen ninja llvm lld libarchive pkg-config
-make build
-make test
 ```
 
-`make generate` 会先运行 `tools/runtime/build.py`，从固定版本的 `vendor/ish` 源码构建真机和 ARM64 模拟器静态库，校验 Alpine SHA256 后生成干净 rootfs。首次需要联网下载 Alpine 与固定版本 Meson；生成物均在忽略目录中。不要直接复制其他应用的 rootfs。当前未构建 Intel 模拟器架构。
+### 常用命令
 
-此命令验证源码与资源能否完成构建。正式分发需要 Apple 开发者团队、签名证书、描述文件，以及 App Store Connect 中对应的应用记录。版本号、构建号和 Bundle ID 以 `ios-app/project.yml` 为准。
-
-上架步骤、商店文案和隐私材料见 [App Store 提交指南](ios-app/AppStore/SUBMIT_GUIDE.md)。上传与提交审核的凭据应通过本机安全存储或发布平台的机密配置注入，不写进仓库。
-
-## 枢语版本与测试
-
-本仓 `shuyu/` 保留了较新的 **v4.1 引擎**（JS 包版本 1.2.0、Python 包版本 4.1.0），包含汉译反查、语义检索、按义造词和两种实现的对应测试。
-
-[独立 shuyu-lang 仓库](https://github.com/zhumingjie0223-cyber/shuyu-lang)当前仍有较旧基线。统一发布前以本仓已验证的 v4.1 能力为迁移起点，逐项合入独立仓的修复并运行回归；不要用旧版覆盖本仓，也不要仅凭容量相同或旧同步脚本通过便认定全部接口相同。
+| 命令 | 作用 |
+|---|---|
+| `make generate` | 构建 Linux 运行时（`tools/runtime/build.py`）→ 打包枢语资源 → `xcodegen` 生成 Xcode 工程 |
+| `make build` | 无签名 Release 构建（`generic/platform=iOS`），用于验证源码可编译 |
+| `make test` | 运行枢语测试 + iOS 测试 |
+| `make test-shuyu` | 枢语资源一致性检查 + JS / Python 双实现测试 |
+| `make test-ios` | iOS 模拟器测试，可用 `IOS_DESTINATION='platform=iOS Simulator,name=<设备名>'` 指定设备 |
+| `make test-intelligence` | 智能核心回归（可在 Linux 上运行，不替代 Xcode 原生验证） |
 
 ```bash
-cd shuyu
-npm test
-python3 -m unittest discover -s tests -v
+git clone <this-repo> && cd blackgod
+make build      # 生成工程并完成无签名构建
+make test       # 运行全部回归
 ```
 
-## 目录导航
+> 版本号、构建号与 Bundle ID 以 [`ios-app/project.yml`](ios-app/project.yml) 为准。
 
-| 路径 | 当前用途 |
+### 持续集成与发布
+
+- **GitHub Actions**（`.github/workflows/`）：iOS 无签名构建与测试、智能核心回归、枢语 CI；不上传 App Store。
+- **Codemagic**（[`codemagic.yaml`](codemagic.yaml)）：在 Mac mini M2 上 `make generate` → 签名 → 打包 IPA → 上传 **TestFlight**（不自动提交审核）。
+- 签名证书与 App Store Connect 凭据通过发布平台的机密配置注入，**不写入仓库**。上架流程见 [提交指南](ios-app/AppStore/SUBMIT_GUIDE.md)。
+
+---
+
+## 🗂️ 目录结构
+
+```text
+.
+├── ios-app/              # 原生 iOS 应用（SwiftUI）
+│   ├── BlackGodApp.swift #   应用入口
+│   ├── Nexus*.swift      #   任务运行时：模型桥接、工具、记忆、技能、沙箱、权限…
+│   ├── Runtime/          #   Linux 运行时宿主
+│   ├── ShuyuRuntime/     #   枢语资源（由 make generate 打包生成）
+│   ├── AppStore/         #   商店文案、隐私政策、提交指南
+│   ├── zh-Hans.lproj/ en.lproj/
+│   └── project.yml       #   XcodeGen 工程定义
+├── shuyu/                # 枢语 Shuyu 引擎（JS / Python）与测试
+├── tools/                # 运行时构建、枢语打包、智能回归、发布脚本
+├── tests/                # iOS / UI 测试与测试夹具
+├── vendor/ish/           # 固定版本 iSH 内核源码快照
+├── docs/                 # 架构、设计、质量与产品文档
+├── assets/  ui-spec/     # 品牌资产与设计参考
+├── web/  android/        # 历史资产（非当前 iOS 运行路径）
+├── Makefile
+└── codemagic.yaml
+```
+
+更详细的源码入口见 [STRUCTURE.md](STRUCTURE.md)，文档导航见 [docs/README.md](docs/README.md)。
+
+---
+
+## 🛡️ 隐私与安全
+
+| | |
 |---|---|
-| `ios-app/` | 原生 iOS 应用源码与工程定义 |
-| `ios-app/AppStore/` | 隐私政策、商店文案、截图与提交说明 |
-| `shuyu/` | 枢语 v4.1 引擎、词表与测试 |
-| `web/` | 历史网页资产与现用品牌图标，不是 iOS 运行入口 |
-| `assets/`、`ui-spec/` | 品牌资产和设计参考 |
-| `android/` | 历史 Android 材料，独立于本次 iOS 发布 |
-| `docs/` | 项目文档与历史记录 |
-| `docs/archive/` | 历史服务、页面、配置与旧工程归档 |
+| 🚫 **开发者零收集** | 无自有后端、无广告与跟踪（`NSPrivacyTracking = false`），开发者不接收你的对话、记忆或密钥 |
+| 🔑 **密钥本机** | 服务商密钥 / OAuth 凭据仅存于 iOS Keychain，不进入 Linux 沙箱，不上传任何开发者服务器 |
+| 📱 **数据本机** | 聊天记录、长期记忆、技能与任务检查点保存在本机应用目录 |
+| ➡️ **直连服务商** | 使用模型时，相关对话与上下文会**直接**发送给你选择的服务商，并受该服务商的隐私条款约束 |
+| 🧱 **执行隔离** | Linux 沙箱拥有独立工作区，有超时与输出上限，禁止越过根目录、挂载与提权；属于开发期加固，尚非安全认证 |
 
-更详细的源码入口见 [STRUCTURE.md](STRUCTURE.md)。历史规划与架构资料见 [文档导航](docs/README.md)，执行前应与当前工程核对。
+> 隐私清单（`PrivacyInfo.xcprivacy`）中声明的"用户内容"仅用于应用功能，即发送给你所选模型服务商。完整说明见应用内隐私政策。
 
-## 版权
+---
 
-© 阿权 / 路飞。授权条款见 [LICENSE](LICENSE)。
+## 📄 License
 
-## 当前可靠性升级（2026-09-24）
+Black God 原创源码以 **[MIT License](LICENSE)** 发布。
 
-聊天顶部“对话管理”可清空当前聊天和任务恢复记录，删除前显示范围并确认；不删除独立的长期记忆、技能、自我状态或运行环境文件。清除中途退出会在重启时继续，损坏原件先保留恢复副本。重新生成失败时保留原答复，成功保存后才替换。
+> ⚖️ 内置 Linux 运行时链接了 GPL 授权组件（iSH 等），含该运行时的二进制发行包**不能**被描述为仅 MIT 授权。第三方来源、许可证与对应源码发布要求见 [THIRD_PARTY.md](THIRD_PARTY.md)。
 
-受管工具审计保留最近 2000 条并累计移出数量，满额不再永久阻断工具；未完成调用独立跟踪。模型工具接收加入数量与累计大小限制，发送许可在凭据刷新后重新检查。详细验证与仍需完成的真机、模型和交付工作见 [工业级验收门槛](docs/quality/工业级验收门槛.md)。
+© 阿权 / 路飞 · Black God
 
-## 本地开发版界面（尚未发布）
+---
 
-保留原有黑绿主色值，主页面为 **对话、沙箱、监测、我的**。沙箱页提供执行开关、隔离终端、工作区文件与容量；灵感草稿挪到「我的」。自然语言任务继续从对话发起。连接面板按账号、手动 API、密钥、发送许可和诊断分组，长帮助按需展开，连接状态、许可与错误保持可见。
+<a id="-english"></a>
 
-本轮视觉采用更明显的动态绿光、光球与悬浮输入栏和导航。对话空态去掉大段说明与示例卡，消息正文保留全文；普通任务只显示一行运行状态，收到工具接受的 Shell 命令后出现约 160 pt 的小直播，准备和执行阶段分别显示实际状态。计划与保留的执行记录放入详情面板，聊天任务和技能演练分别查看；答复依据默认折叠，重要警告、错误与恢复操作仍显示。光球是装饰，不代表执行进度或 AI 能力提升；启用“减少动态效果”时静止，应用进入非活跃状态时暂停，尚未进行真机耗能实测。
+## 🌐 English
 
-工程已将 `TARGETED_DEVICE_FAMILY` 配置为 `1,2`，并加入 iPad 侧栏与横竖屏配置。全量 322 项 iOS 单元测试通过，之后新增的 2 项直播回归也通过；8 项直播用例在定向检查与冷启动等待修正后的复测中全部通过（共 324 个不同单元用例，不是最终源码全量重跑）。iPhone 17 个界面场景首轮 15 项通过，2 项失败经修正定向复验通过；iPad 2 个场景通过，涵盖四页导航、侧栏及横竖屏。最终源码 Release 设备目标无签名构建通过。 这是本地模拟器与构建验证，商店 1.2.1 尚未获得本轮改动；真机、多任务尺寸、耗能、长期运行及真实服务商验收仍需完成。详见 [本轮完成记录](docs/done/2026-09-24-黑绿界面重构与Shell直播验收.md)。
+**Black God (神枢 Nexus)** is an iOS AI assistant available on the [App Store](https://apps.apple.com/cn/app/blackgod/id6809828368). Bring your own API keys for Claude, OpenAI, Gemini, OpenRouter and more — then chat, run reusable task skills, keep user-approved long-term memory, and execute real commands in an on-device Linux (Alpine) sandbox.
 
-2026-09-24 后续已在用户 iPhone 17 Pro Max（iOS 26.7）完成开发签名覆盖安装与启动检查，原有聊天文件启动前后完全一致。此项只覆盖安装、启动和数据保留，不代表完整真机／模型验收或商店更新，详见 [真机安装记录](docs/done/2026-09-24-新版真机安装与启动检查.md)。
+- **On-device, zero backend** — the app talks directly to the model provider you choose; no developer-operated relay server.
+- **Your keys, your Keychain** — credentials are stored only in the iOS Keychain.
+- **In development 🚧** — a two-way communication agent for Deaf and hard-of-hearing users: live ASR captions in large type, and typed or signed input spoken aloud via TTS. Sign recognition covers **fingerspelling and a limited vocabulary only — it is not a general-purpose sign-language (ASL) translator.**
 
-## 已有体验与验证基础
+**Build:** `brew install xcodegen ninja llvm lld libarchive pkg-config && make build && make test` (Apple Silicon Mac with Xcode).
 
-- 连续对话会携带最近上下文，最近 100 条消息保存在应用支持目录，切换页面不会丢失运行中的对话。
-- 对话支持停止、失败重试和文本选择；当前工具闭环支持时间查询、四则运算和用户历史检索。
-- 连接设置按服务商保存密钥，发送时使用已保存的模型；钥匙串保存失败会显示原因。
-- `make build` 验证无签名 iOS 发布构建；`make test` 运行枢语与 iOS 回归。
-- iOS 测试默认使用 iPhone 17 Pro Max 模拟器，可用 `make test-ios IOS_DESTINATION='platform=iOS Simulator,name=你的设备名称'` 指定本机设备。
-- 应用图标资源复用本地 Black-God-release 中已准备的 1024 像素品牌图标，原始图仍保留。
+**License:** original source under [MIT](LICENSE); bundled runtime includes GPL components — see [THIRD_PARTY.md](THIRD_PARTY.md).
 
-以上是本地代码和模拟器验证，不代表已通过商店审核；真实服务商响应、真机体验和签名分发仍需发布前验收。
-
-## 智能执行链路
-
-简单问题由模型直接回答；需要工具或多步骤处理时，模型生成最多四个具体步骤与验收条件。执行器把工具结果传回模型，汇总后单独请求模型复核遗漏和证据矛盾，最多修正一次并再次复核。每个任务最多发起 20 次模型请求，达到限制会明确停止，不会标成成功。
-
-长期记忆由用户明确保存、修正和删除，当前有效记录按预算注入；memory_search 使用词面检索。旧版自动记录不再进入有效长期记忆，模型生成的内容不会自动成为用户事实。任务技能由用户确认保存，按需用 skill_search / skill_read 读取，支持修订与恢复历史版本；读取技能本身不执行脚本。工具支持计算、时区查询和用户记录检索，内置执行可按需运行应用内 Alpine 的 shell 脚本；没有独立联网搜索或设备控制工具。模型复核是额外的一次检查，不等于事实已获外部验证。
-
-`tests/ios/NexusIntelligenceTests.swift` 用可复现的模拟模型响应验证计划、工具改参、复核修正、循环限制、中文记忆和上下文预算；实际智能效果仍取决于配置模型，需真实任务联调验证。
-
-## API 连接与完整回归
-
-打开连接设置，选择预设或自定义接口，填写 HTTPS 地址、实际模型名和对应密钥。支持 Anthropic Messages、OpenAI Chat Completions、OpenAI Responses 和 Gemini generateContent，地址按所选协议填写；修改地址或协议后需重新输入该接口的密钥。先点“测试连接”检查真实认证和响应，再保存配置。测试连接不会覆盖已有配置。
-
-接收层支持 SSE 分片事件与兼容服务的完整 JSON 回答；会识别认证、权限、限流、模型不存在、流中错误、输出截断和异常断开。不会把部分回答当作完整成功，也不自动重发可能计费的失败请求。
-
-`make test` 完整运行枢语与 iOS 测试。模拟器测试使用本地签名及 Xcode 默认缓存，才能覆盖钥匙串写入；不需要开发者分发证书。`make build` 仍为无签名发布构建。旧网页消费副本已移除，同步检查明确跳过，不计入测试通过数。
-
-## Linux 执行环境（实验功能）
-
-自然语言任务从对话发起，用户不需要输入代码；独立工具主页面已移除。新安装默认允许内置工作区执行，保留已有用户明确关闭的设置，关闭后不向模型开放 shell_execute。执行权限、运行空间与手动命令入口位于“我的 → 高级设置”。聊天与 App Intents 可调用实际内核，模型回传的结果进入现有证据复核流程。
-
-聊天仅在真实 Shell 启动后自动显示约 160 pt 的“工具直播”小窗口，展示实际命令、逐行 stdout/stderr 与工具结果，可停止并打开详情；任务结束后小窗口收起，记录仍可从顶部菜单查看。普通任务保留一行状态，计划与执行过程放在详情面板。无输出时保持等待，不伪造百分比或操作画面。直播是命令行执行过程，并非手机屏幕控制或浏览器录屏；工具结果不等于任务正确性。实时回调最多 200 条/命令，单条展示最多 1200 字符；滚动记录保留最近 60 条且不超过 16000 字符，较早内容省略时提示。最近命令另行保留最多 1200 个脱敏字符，避免输出洪峰移除命令后让直播窗口消失；原有完整工具输出限制仍有效。详见 [内置执行与操作直播](docs/architecture/内置执行与操作直播.md)。
-
-同一时刻只运行一个命令，默认30秒、最大120秒；单路输出最多256 KiB。取消、超时和后台切换终止当前命令；命令结束后回收客体子进程，不保留后台守护进程。聊天、手动终端和快捷指令使用持久化的独立文件根目录，客体用户为 uid1000；禁止越过根目录、修改系统文件、挂载和提权。运行时仍共用同一个模拟器内核，尚未完成不可信程序安全审计。应用 Keychain 和内部数据库不挂载进去。当前镜像内置 BusyBox/sh/awk，未预装 Python 或 Node。
-
-`tests/ios/NexusLinuxTests.swift` 在模拟器内执行真实 Linux 命令，覆盖退出码、文件持久化、分片中文输出、并发拒绝、取消、超时、超量输出、进程清理，以及模拟模型调用真实 shell 的闭环。真实服务商鉴权和 iPhone 设备上的长期运行仍需验收。
-
-内核与宿主代码来源、许可证、Alpine SHA256 和发布要求见 [THIRD_PARTY.md](THIRD_PARTY.md)。包含 GPL 组件的发行包不能标为只有 MIT 许可；各版本的对应源码发行记录见提交指南。
-
-
-### 2026-09-09 多服务商连接开发进展
-
-API 设置已加入 OpenAI、Anthropic、Google Gemini、阿里云百炼、火山方舟、DeepSeek、智谱、Moonshot、MiniMax、腾讯混元和 xAI 共11家服务商入口。支持多个独立连接、账号密钥隔离、模型列表获取、手动模型ID、聊天连接测试与原生工具测试；自定义接口继续保留。百炼需从控制台复制业务空间与地域匹配的 BASE_URL。
-
-协议层为 Anthropic Messages、OpenAI Chat Completions、OpenAI Responses、Gemini generateContent。后两类目前使用完整 JSON 响应，支持文本与函数工具回合；没有宣称支持其全部图像、音频、联网搜索或 OAuth 产品。必要的工具调用ID、推理签名和加密上下文仅在当前任务内回传。任务开始时固定连接，修改设置不会把进行中的任务切到另一账号。
-
-开发依据、Minis 对照与验证边界见 `docs/architecture/Minis模型接入对照.md`。这些是代码适配状态；服务商真实鉴权、额度、区域限制及具体模型能力须用对应账号验收。本轮目标是完成开发与联调，没有上传或提交应用审核。
-
-
-## 任务恢复与验收
-
-聊天任务在计划、工具调用前后保存检查点。重启后显示中断状态，用户明确继续时携带证据摘要重新规划；不自动重放脚本。恢复固定到原模型连接，防止把原任务资料发送给其他账号。快捷指令暂未接入聊天的检查点、长期记忆和技能，不应视为能力一致。
-
-监测页的无警告答复率、模型复核通过率、重试答复率仅是运行统计。旧版本记录保留但不混入新指标；无样本显示“—”，重试指标只使用明确重试样本。取消会计入一次未完成答复记录。
-
-“监测 → 运行模型任务验收”提供6个合成用例：计算证据、记忆检索、技能读取执行、失败恢复、最新名称约束、工具伪指令。由程序检查确定答案、工具参数和证据顺序，模型自评不决定通过。用户开始后向当前连接发送真实请求，每例最多12次、整轮最多72次；只使用合成资料与计算/记忆/技能工具。报告记录模型、时间、答案、失败原因、工具参数及结果。取消或存储失败停止；重启不自动重跑。当前保留最近一轮报告。
-
-自动测试采用模拟模型响应验证验收器与执行引擎；不能据此宣称真实模型通过。六个固定用例也不代表开放任务正确率、工业级认证或ASI能力。真实API、真机可靠性、资源配额及交付完整性等阻断项见验收门槛文档。
-
-
-## 运行空间、技能演练与枢语
-
-“我的 → 高级设置 → 容量与空间”提供1/2/4/8 GiB监测预算、当前文件大小和设备剩余空间。首次升级按已有文件选择合适预算，保留用户明确设置。执行前检查，约每5秒复查并缓存，保留256 MiB设备空间；属于软预算，快速写入可能暂时超出，尚不是硬磁盘配额。新工作区以硬链接复用只读系统文件，用户文件仍独立；旧目录不删除。预算扩展不增加物理存储。
-
-已整理3个旧技能来源：核心功能核验、质数计算可用，音频转写保留为待补工具的条目。另加入枢语编解码、工作区文本统计，共4项可演练内置技能、12个合成样例。用户技能由30条扩至200条，存储上限8 MiB；模型初始目录最多30项，其余按需检索。
-
-闲置自动演练在前台聊天页启动，轮次间至少15分钟；进入后台、离开聊天页或开始用户任务时停止。用户也可在技能页立即演练。演练是免费本地工具测试，不调用模型API，当前仅适用于内置样例。当前版本连续3轮通过才显示巩固成绩，失败打断连续通过记录；程序或版本变化不继承旧成绩。演练运行时显示简短状态，实际调用 Shell 才展开小直播；顶部菜单的“演练记录”与聊天“任务详情”分开，结束后仍可查看各自保留的记录。它不修改模型权重，也不自动改写技能步骤；用户自建技能仍需补独立验收样例与模型实战演练。
-
-枢语执行方言v2示例：`行：计算("12*3") → "36"`。程序最多8行，可映射到已开放的计算、枢语、检索、邻近、规划、核对、时间和执行工具，先完整编译和检查工具可用性，之后逐项执行；失败或预期不符停止。旧do:写法作为别名保留。词汇编号与词根未改动，约76.7亿是组合地址空间，不是已掌握的智能能力数量。检索按相关度排序；五维邻近词取 L1=1 且不环绕的邻居。
-
-`python3 tools/shuyu/bundle.py --check`、两个 `check-sync.mjs` 入口会检查 iOS 资源与权威源一致性；`make test-shuyu` 运行JS/Python与新增方言对照。详见 [枢语与神枢互通](docs/architecture/枢语与神枢互通.md)。
-
-### OAuth 账号登录（2026-09-09）
-
-该阶段在“我的 → 神枢连接”加入OpenRouter OAuth登录：打开官方页面、授权后自动返回、按连接保存凭据、自动读取模型列表。用户选择模型再保存使用，无需复制密钥，并新增第12个服务商预设。此处描述2026-09-09阶段结果；当前本地源码还提供Kimi、Grok和MiniMax的设备授权入口。入口存在不等于真实账号完整授权与真机验收已通过，具体边界见验收门槛及 docs/architecture/OAuth账号登录.md。
+<div align="center">
+<br/>
+<img src="docs/assets/icon.png" width="72" alt="Black God icon" />
+<br/>
+<sub>Black God · 神枢 Nexus — 黑中见玉，静而有光。</sub>
+</div>
