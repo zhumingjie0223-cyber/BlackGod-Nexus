@@ -409,7 +409,7 @@ enum NexusIntentCompiler {
         if containsAction(["发送", "发给", "转发", "发出去", "发布", "提交订单"], text: commands)
             || commands.range(of: "^(?:请|帮我|先|再|直接)?\\s*发(?:那个|这|那|上|报告|文件|$)", options: .regularExpression) != nil { return .send }
         if containsAction(["购买", "买下", "付款", "支付", "转账", "充值", "订购", "花钱", "买一"], text: commands) { return .purchase }
-        if containsAction(["恢复", "撤销", "还原"], text: commands) { return .restore }
+        if containsAction(["恢复", "撤销", "还原"], text: commands, processPrefixes: ["错误", "失败", "中断"]) { return .restore }
         if ["执行命令", "运行命令", "运行脚本", "执行脚本", "跑测试", "运行测试"].contains(where: commands.contains)
             || commands.range(of: "(?:运行|执行)(?:这个|那个|上次的|刚才的|\\s*)?(?:脚本|程序|命令|测试)|(?:运行|执行|打开|调用|用)\\s*(?:shell|终端)", options: .regularExpression) != nil { return .execute }
         if containsAction(["修改", "改动", "改成", "写入", "更新", "补充", "保存", "重写", "编辑", "替换", "新建", "创建"], text: commands) { return .write }
@@ -421,12 +421,18 @@ enum NexusIntentCompiler {
         return .respond
     }
 
-    private static func containsAction(_ actions: [String], text: String) -> Bool {
+    private static func containsAction(_ actions: [String], text: String, processPrefixes: [String] = []) -> Bool {
         for action in actions {
             var start = text.startIndex
             while let range = text.range(of: action, range: start..<text.endIndex) {
                 let after = text[range.upperBound...]
-                let nounSuffixes = ["说明", "指南", "方法", "步骤", "教程", "权限", "按钮", "功能", "操作的", "操作说明", "的报告", "字的"]
+                let before = text[text.startIndex..<range.lowerBound]
+                // 「错误恢复/失败恢复/中断恢复」是流程语义，不是还原文件或备份。
+                if processPrefixes.contains(where: before.hasSuffix) {
+                    start = range.upperBound
+                    continue
+                }
+                let nounSuffixes = ["说明", "指南", "方法", "步骤", "教程", "权限", "按钮", "功能", "操作的", "操作说明", "的报告", "字的", "验收"]
                 if !nounSuffixes.contains(where: after.hasPrefix) { return true }
                 start = range.upperBound
             }

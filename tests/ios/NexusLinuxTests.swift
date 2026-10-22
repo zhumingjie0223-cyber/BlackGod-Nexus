@@ -192,7 +192,7 @@ extension NexusLinuxTests {
             XCTAssertTrue(results[0].1.output.contains("42"))
             return try NexusNativeCodec.decode(Data(#"{"choices":[{"message":{"content":"脚本运行结果：42"},"finish_reason":"stop"}]}"#.utf8), type: .openAICompatible)
         })
-        let result = try await engine.run(goal: "用awk计算6乘7")
+        let result = try await engine.run(goal: "运行命令：`awk 'BEGIN { print 6*7 }'`")
         XCTAssertTrue(result.reviewPassed)
         XCTAssertEqual(engine.executor?.toolTraces.count, 1)
     }
@@ -235,7 +235,7 @@ extension NexusLinuxTests {
             }
             return NexusNativeReply(text: "已执行两次", calls: [], assistant: ["role": "assistant", "content": "已执行两次"])
         })
-        _ = try await engine.run(goal: "连续执行两次状态更新")
+        _ = try await engine.run(goal: "运行命令：`n=$(cat n 2>/dev/null || echo 0); n=$((n+1)); echo \"$n\" > n; cat n`")
         XCTAssertEqual(observed.count, 2)
         XCTAssertTrue(observed[0].contains("stdout:\n1\n"))
         XCTAssertTrue(observed[1].contains("stdout:\n2\n"))
@@ -311,7 +311,7 @@ extension NexusLinuxTests {
         let call = "{\"name\":\"shell_execute\",\"arguments\":{\"command\":\"echo x >> count; wc -l < count\"}}"
         var replies = ["{\"steps\":[\"写入两次\"]}", call, call, "已写入两行", "{\"passed\":true,\"issues\":[]}"]
         let engine = NexusReasoningEngine(tools: tools, model: { _ in replies.removeFirst() })
-        let result = try await engine.run(goal: "重复写入两行")
+        let result = try await engine.run(goal: "运行命令：`echo x >> count; wc -l < count`")
         XCTAssertTrue(result.reviewPassed)
         XCTAssertEqual(engine.executor?.toolTraces.count, 2)
         XCTAssertTrue(engine.executor?.toolTraces.last?.result.contains("stdout:\n2\n") == true)

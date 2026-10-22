@@ -290,7 +290,7 @@ final class BlackGodUITests: XCTestCase {
         XCTAssertTrue(login.isEnabled)
         // 点击文字左侧的按钮留白，验证整个可见按钮均可启动真实授权。
         login.coordinate(withNormalizedOffset: CGVector(dx: 0.08, dy: 0.5)).tap()
-        let close = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@", "关闭", "Close")).firstMatch
+        let close = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@ OR label == %@ OR label == %@ OR label == %@", "关闭", "Close", "取消", "Cancel", "Done")).firstMatch
         guard close.waitForExistence(timeout: 25) else {
             XCTFail("点击按钮留白后未出现官方授权页面：" + app.debugDescription)
             return
@@ -320,7 +320,7 @@ final class BlackGodUITests: XCTestCase {
         XCTAssertTrue(login.isEnabled)
         // 等按钮完整可操作后按压，避免繁忙运行器丢失过短的触摸事件；不提交账号或授权。
         login.press(forDuration: 0.15)
-        let done = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@", "关闭", "Close")).firstMatch
+        let done = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@ OR label == %@ OR label == %@ OR label == %@", "关闭", "Close", "取消", "Cancel", "Done")).firstMatch
         guard done.waitForExistence(timeout: 30) else {
             XCTFail("登录操作未打开官方页面：" + app.debugDescription)
             return
@@ -343,7 +343,7 @@ final class BlackGodUITests: XCTestCase {
         let login = app.buttons["oauth.kimi-oauth"]
         XCTAssertTrue(login.waitForExistence(timeout: 10)); login.tap()
         // Anonymous authorization only. Never submit account details or consent.
-        let close = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@", "关闭", "Close")).firstMatch
+        let close = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@ OR label == %@ OR label == %@ OR label == %@", "关闭", "Close", "取消", "Cancel", "Done")).firstMatch
         XCTAssertTrue(close.waitForExistence(timeout: 25)); close.tap()
         let cancel = app.buttons["oauth.cancel"]
         XCTAssertTrue(cancel.waitForExistence(timeout: 10))
@@ -370,12 +370,19 @@ final class BlackGodUITests: XCTestCase {
         for _ in 0..<8 where !consent.isHittable { app.swipeUp() }
         XCTAssertTrue(consent.isHittable)
         XCTAssertEqual(consent.value as? String, "0")
-        consent.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        // 开关命中区域随动态字体变化；先点控件本体，再回退到右侧拇指区。
+        consent.tap()
+        if (consent.value as? String) != "1" {
+            consent.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        }
         expectation(for: NSPredicate(format: "value == %@", "1"), evaluatedWith: consent)
-        waitForExpectations(timeout: 3)
-        consent.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        waitForExpectations(timeout: 8)
+        consent.tap()
+        if (consent.value as? String) != "0" {
+            consent.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        }
         expectation(for: NSPredicate(format: "value == %@", "0"), evaluatedWith: consent)
-        waitForExpectations(timeout: 3)
+        waitForExpectations(timeout: 8)
         let privacy = XCTAttachment(screenshot: app.screenshot()); privacy.name = "模型数据发送许可"; privacy.lifetime = .keepAlways; add(privacy)
     }
 

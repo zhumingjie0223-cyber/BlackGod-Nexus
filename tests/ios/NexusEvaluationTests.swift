@@ -71,7 +71,7 @@ final class NexusEvaluationTests: XCTestCase {
         XCTAssertEqual(vm.evaluations.responseRate, 0)
         XCTAssertNil(vm.evaluations.recoveryRate)
         let resumed = ChatViewModel(store: NexusConversationStore(url: folder.appendingPathComponent("chat.json")), configured: { _ in true }, completion: { _, _ in
-            #"{"answer":"已恢复答复"}"#
+            #"{"answer":"继续后的答复"}"#
         })
         resumed.resume()
         for _ in 0..<100 where resumed.isTyping { try await Task.sleep(nanoseconds: 10_000_000) }

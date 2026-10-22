@@ -32,6 +32,16 @@ final class NexusIntentTests: XCTestCase {
         .init(id: id, source: .workspaceFile, title: title, text: text, objectPath: path, provenance: "测试工作区", relevance: score)
     }
 
+    func testErrorRecoveryWordingIsCalculateNotRestore() {
+        let tools: Set<String> = ["calc", "memory_search", "skill_read", "workspace_read"]
+        let card = NexusIntentCompiler.compile(
+            goal: "这是错误恢复验收：先用calc尝试1/0，收到错误后改用calc计算6/2。",
+            candidates: [], availableTools: tools)
+        XCTAssertEqual(card.operation, .calculate)
+        XCTAssertNil(card.clarification)
+        XCTAssertEqual(card.preferredTool, "calc")
+    }
+
     func testDangerousAmbiguityCannotBeResolvedByModelScoreOrProposedID() {
         let first = file("one", "第一份报告", "one.md", score: 0.99)
         let second = file("two", "第二份报告", "two.md", score: 0.01)

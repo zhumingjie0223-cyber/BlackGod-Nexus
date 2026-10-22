@@ -146,7 +146,7 @@ final class NexusSkillsTests: XCTestCase {
                 }
                 return #"{"passed":true,"issues":[]}"#
             })
-        vm.send("核对订单金额")
+        vm.send("用calc按适用流程计算订单金额3+4")
         try await finish(vm)
         XCTAssertTrue(sawIndex)
         XCTAssertEqual(turns, 3)
@@ -163,7 +163,7 @@ final class NexusSkillsTests: XCTestCase {
                 try await Task.sleep(for: .seconds(30))
                 return "不应返回"
             })
-        vm.send("检查订单")
+        vm.send("请直接说明当前订单状态")
         await fulfillment(of: [started], timeout: 3)
         try store.save(content(step: "新步骤"), replacing: id)
         XCTAssertFalse(vm.isTyping)
@@ -190,7 +190,7 @@ final class NexusSkillsTests: XCTestCase {
             default: return #"{"passed":true,"issues":[]}"#
             }
         })
-        _ = try await engine.run(goal: "读取核对流程")
+        _ = try await engine.run(goal: "用skill_read读取流程后计算适用结果")
         XCTAssertEqual(engine.executor?.toolTraces.first?.call.name, "skill_read")
         XCTAssertEqual(calls, 4)
     }

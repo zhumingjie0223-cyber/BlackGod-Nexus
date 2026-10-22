@@ -152,7 +152,7 @@ final class NexusCuratedMemoryTests: XCTestCase {
     func testEmptyMemoryIsExplicitWhenResumingAnOldTask() async throws {
         let memory = NexusMemoryStore(url: url)
         let chat = NexusConversationStore(url: folder.appendingPathComponent("chat.json"))
-        var record = NexusAgentCheckpoint(id: UUID(), goal: "恢复任务", connection: NexusModelCatalog.entry(for: NexusKeychain.shared.selectedModel))
+        var record = NexusAgentCheckpoint(id: UUID(), goal: "继续未完成的任务", connection: NexusModelCatalog.entry(for: NexusKeychain.shared.selectedModel))
         record.inheritedContext = "旧记忆：语言为英文"
         try NexusAgentCheckpointStore(url: chat.url.deletingPathExtension().appendingPathExtension("agent.json")).save(record)
         var request = ""

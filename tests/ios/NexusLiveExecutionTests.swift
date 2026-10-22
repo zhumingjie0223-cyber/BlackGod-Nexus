@@ -98,17 +98,19 @@ final class NexusLiveExecutionTests: XCTestCase {
         XCTAssertTrue(result.output.hasSuffix("1000\n"))
     }
     func testUserGoalIsExecutedInternallyAndVisibleWithoutUserWritingCommands() async throws {
-        let live = NexusLiveExecution(); live.begin(goal: "把三个商品价格求和")
+        // Intent 卡仅在 execute+用户授权命令时放行 shell；此用例验证用户只说求和目标时，
+        // 端上用 calc 完成计算并在 live 轨迹中可见，无需用户手写脚本。
+        let live = NexusLiveExecution(); live.begin(goal: "把三个商品价格加起来")
         var tools = NexusToolRegistry()
-        tools.register(NexusLinuxTool(workspace: UUID(), onStart: { live.append(.command, $0) }, onOutput: { line, error in live.append(error ? .error : .output, line) }, isEnabled: { true }))
-        var replies = [#"{"steps":["计算价格"]}"#, #"{"name":"shell_execute","arguments":{"command":"printf '%s\\n' 12 18 9 | awk '{s+=$1} END {print s}'"}}"#, "三件商品合计39元。", #"{"passed":true,"issues":[]}"#]
+        tools.register(NexusCalculatorTool())
+        var replies = [#"{"steps":["计算价格"]}"#, #"{"name":"calc","arguments":{"expression":"12+18+9"}}"#, "三件商品合计39元。", #"{"passed":true,"issues":[]}"#]
         let engine = NexusReasoningEngine(tools: tools, model: { _ in replies.removeFirst() }, onCheckpoint: { live.observe($0.traces) }, onEvent: { live.phase($0) })
-        let result = try await engine.run(goal: "把苹果12元、牛奶18元和面包9元求和")
+        let result = try await engine.run(goal: "把苹果12元、牛奶18元和面包9元加起来")
         live.finish(.answered, message: "已生成答复")
         XCTAssertEqual(result.text, "三件商品合计39元。")
-        XCTAssertTrue(live.entries.contains { $0.kind == .command })
-        XCTAssertTrue(live.entries.contains { $0.kind == .output && $0.text == "39" })
-        XCTAssertTrue(live.entries.contains { $0.kind == .result && $0.text.contains("exit_code=0") })
+        XCTAssertEqual(engine.executor?.toolTraces.first?.call.name, "calc")
+        XCTAssertEqual(engine.executor?.toolTraces.first?.result.trimmingCharacters(in: .whitespacesAndNewlines), "39")
+        XCTAssertTrue(live.entries.contains { $0.kind == .result && $0.text.contains("calc") && $0.text.contains("39") })
     }
 
     func testRealShellConversationRendersLiveOutputAndAnswerEvidence() async throws {
