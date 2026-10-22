@@ -69,15 +69,25 @@ final class NexusBenchmarkTests: XCTestCase {
         XCTAssertFalse(testCase("constraint").failures(answer: "{\"result\":\"BlackGod888\"}", traces: []).isEmpty)
     }
     func testRunnerPersistsIndependentFailureDespiteModelReviewPass() async throws {
-        var replies = ["{\"steps\":[\"计算\"]}", "{\"name\":\"calc\",\"arguments\":{\"expression\":\"12*3\"}}", "{\"result\":35}", "{\"passed\":true,\"issues\":[]}"]
+        // 计划 → 调用 calc → 错误答案 35 → 模型复核放行；本地独立检查发现与工具证据 36 矛盾，
+        // 引擎按设计重做一次该步骤（模型仍坚持 35）并再次复核，共 6 次调用。
+        var replies = ["{\"steps\":[\"计算\"]}", "{\"name\":\"calc\",\"arguments\":{\"expression\":\"12*3\"}}",
+                       "{\"result\":35}", "{\"passed\":true,\"issues\":[]}",
+                       "{\"result\":35}", "{\"passed\":true,\"issues\":[]}"]
         let runner = NexusBenchmarkRunner(store: store)
-        await runner.run(connection: connection, cases: [testCase("arithmetic")], model: { _, _ in replies.removeFirst() })
+        await runner.run(connection: connection, cases: [testCase("arithmetic")], model: { _, _ in
+            guard !replies.isEmpty else {
+                XCTFail("脚本化模型回复已用完：引擎发起了多余的模型调用")
+                throw NexusError.invalidResponse
+            }
+            return replies.removeFirst()
+        })
         let report = try XCTUnwrap(store.load())
         XCTAssertEqual(report.state, .completed)
         XCTAssertEqual(report.passedCount, 0)
         XCTAssertEqual(report.results.first?.status, .failed)
         XCTAssertEqual(report.results.first?.evidence.first?.output, "36")
-        XCTAssertEqual(report.modelCalls, 4)
+        XCTAssertEqual(report.modelCalls, 6)
     }
     func testAllSixFixturesRunThroughRealEngineWithScriptedModel() async throws {
         let runner = NexusBenchmarkRunner(store: store)

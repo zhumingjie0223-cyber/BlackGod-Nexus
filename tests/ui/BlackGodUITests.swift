@@ -341,7 +341,10 @@ final class BlackGodUITests: XCTestCase {
         app.launchArguments = ["-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN"]
         app.launch(); app.buttons["tab.4"].tap(); app.buttons["api.open"].tap()
         let login = app.buttons["oauth.kimi-oauth"]
-        XCTAssertTrue(login.waitForExistence(timeout: 10)); login.tap()
+        XCTAssertTrue(login.waitForExistence(timeout: 10))
+        // 该按钮初始位于底部「保存并使用」栏下方，直接点中心会落在保存栏上；先完整滚入可操作区。
+        reveal(login, in: app)
+        login.press(forDuration: 0.15)
         // Anonymous authorization only. Never submit account details or consent.
         let close = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@ OR label == %@ OR label == %@ OR label == %@", "关闭", "Close", "取消", "Cancel", "Done")).firstMatch
         XCTAssertTrue(close.waitForExistence(timeout: 25)); close.tap()
@@ -367,22 +370,19 @@ final class BlackGodUITests: XCTestCase {
         XCTAssertTrue(claude.isHittable); claude.tap()
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "Claude接入说明"; shot.lifetime = .keepAlways; add(shot)
         let consent = app.switches["api.data-consent"]
-        for _ in 0..<8 where !consent.isHittable { app.swipeUp() }
-        XCTAssertTrue(consent.isHittable)
+        XCTAssertTrue(consent.waitForExistence(timeout: 10))
+        reveal(consent, in: app)
         XCTAssertEqual(consent.value as? String, "0")
-        // 开关命中区域随动态字体变化；先点控件本体，再回退到右侧拇指区。
-        consent.tap()
-        if (consent.value as? String) != "1" {
-            consent.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        // 只点一次真正的 UISwitch 拇指（带标签的外层 Switch 中心落在文字上）。
+        // 之前「点一次→立即读值→未变再补点」会在值尚未刷新时连点两次，把开关又关回去。
+        func toggle(to expected: String) {
+            let inner = consent.switches.firstMatch
+            if inner.exists { inner.tap() } else { consent.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap() }
+            let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", expected), object: consent)
+            XCTAssertEqual(XCTWaiter().wait(for: [changed], timeout: 8), .completed, "数据许可开关未切换为 \(expected)")
         }
-        expectation(for: NSPredicate(format: "value == %@", "1"), evaluatedWith: consent)
-        waitForExpectations(timeout: 8)
-        consent.tap()
-        if (consent.value as? String) != "0" {
-            consent.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
-        }
-        expectation(for: NSPredicate(format: "value == %@", "0"), evaluatedWith: consent)
-        waitForExpectations(timeout: 8)
+        toggle(to: "1")
+        toggle(to: "0")
         let privacy = XCTAttachment(screenshot: app.screenshot()); privacy.name = "模型数据发送许可"; privacy.lifetime = .keepAlways; add(privacy)
     }
 

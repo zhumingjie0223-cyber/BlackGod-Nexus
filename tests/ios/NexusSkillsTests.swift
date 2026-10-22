@@ -190,7 +190,7 @@ final class NexusSkillsTests: XCTestCase {
             default: return #"{"passed":true,"issues":[]}"#
             }
         })
-        _ = try await engine.run(goal: "用skill_read读取流程后计算适用结果")
+        _ = try await engine.run(goal: "用skill_read取得流程后给出适用结果")
         XCTAssertEqual(engine.executor?.toolTraces.first?.call.name, "skill_read")
         XCTAssertEqual(calls, 4)
     }
