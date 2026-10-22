@@ -136,7 +136,7 @@ final class VoiceSignCoreTests: XCTestCase {
             }
             checked += 1
         }
-        XCTAssertEqual(checked, 15)
+        XCTAssertEqual(checked, 16)
 
         // 内联补充（建议数据侧补为 m16）：不在词表 + 手部够 + 置信度偏低 → reject_no_speak
         let m16 = [SignCandidate(label: "computer", confidence: 0.6), SignCandidate(label: "hello", confidence: 0.3)]
