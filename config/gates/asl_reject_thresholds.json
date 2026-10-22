@@ -1,0 +1,1 @@
+{"schema":"blackgod.asl_reject_thresholds","version":"0.1-provisional","status":"provisional","min_confidence":0.85,"min_top2_margin":0.15,"min_hand_score":0.5,"on_reject":"retry_prompt","speak_requires_user_confirm":true}

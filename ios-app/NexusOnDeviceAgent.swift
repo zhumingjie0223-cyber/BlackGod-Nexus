@@ -19,6 +19,30 @@ struct NexusOnDeviceRequest: Codable, Equatable {
     var userConfirmed: Bool
     /// 端上能力是否就绪（例如手语模型未过门控时为 false）。
     var onDeviceReady: Bool
+    /// 前两名候选分差（手语识别用）；缺失按没把握处理。
+    var top2Margin: Double? = nil
+    /// 手部检测分数（手语识别用）；缺失按没把握处理。
+    var handScore: Double? = nil
+}
+
+/// 统一拒识阈值，读 config/gates/asl_reject_thresholds.json（门控维护，暂定）。代码里不写死数。
+struct NexusRejectThresholds: Codable, Equatable {
+    var schema: String
+    var version: String
+    var status: String
+    var minConfidence: Double
+    var minTop2Margin: Double
+    var minHandScore: Double
+    var onReject: String
+    var speakRequiresUserConfirm: Bool
+    enum CodingKeys: String, CodingKey {
+        case schema, version, status
+        case minConfidence = "min_confidence", minTop2Margin = "min_top2_margin", minHandScore = "min_hand_score"
+        case onReject = "on_reject", speakRequiresUserConfirm = "speak_requires_user_confirm"
+    }
+    static func load(from url: URL) throws -> NexusRejectThresholds {
+        try JSONDecoder().decode(NexusRejectThresholds.self, from: Data(contentsOf: url))
+    }
 }
 
 struct NexusOnDeviceDecision: Codable, Equatable {
@@ -29,16 +53,16 @@ struct NexusOnDeviceDecision: Codable, Equatable {
 }
 
 enum NexusOnDeviceAgentPolicy {
-    /// 低于此置信度只提示重打，绝不代说。阈值待真机实测后由门控锁定。
-    static let minSpeakConfidence = 0.80
-
-    static func decide(_ r: NexusOnDeviceRequest) -> NexusOnDeviceDecision {
+    /// 阈值一律来自门控配置；任一项低于下限或缺失只提示重打，绝不代说。
+    static func decide(_ r: NexusOnDeviceRequest, thresholds t: NexusRejectThresholds) -> NexusOnDeviceDecision {
         if r.wantedOutput == .image || r.wantedOutput == .video {
             return .init(route: .refuse, reason: "本体不能生成图片或视频", rawMediaLeavesDevice: false)
         }
         let isRecognition = r.input == .signVideo || r.input == .audio
-        if isRecognition, (r.recognitionConfidence ?? 0) < minSpeakConfidence {
-            // 识别类输入缺置信度按没把握处理。
+        let lowConf = (r.recognitionConfidence ?? -1) < t.minConfidence
+        let lowSign = r.input == .signVideo && ((r.top2Margin ?? -1) < t.minTop2Margin || (r.handScore ?? -1) < t.minHandScore)
+        if isRecognition, lowConf || lowSign {
+            // 识别类输入缺任何一项按没把握处理。
             return .init(route: .askRetry, reason: "没看清，请再打一次", rawMediaLeavesDevice: false)
         }
         if r.input == .signVideo && r.wantedOutput == .speech && !r.userConfirmed {
