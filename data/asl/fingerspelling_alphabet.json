@@ -1,0 +1,272 @@
+{
+  "_meta": {
+    "description": "ASL fingerspelling A-Z; handshape notes are brief and non-authoritative",
+    "version": "0.1"
+  },
+  "letters": [
+    {
+      "id": "asl_letter_a",
+      "letter": "A",
+      "is_dynamic": false,
+      "handshape_note": "拳头，拇指贴食指侧",
+      "confusable_with": [
+        "S",
+        "T",
+        "M",
+        "N",
+        "E"
+      ]
+    },
+    {
+      "id": "asl_letter_b",
+      "letter": "B",
+      "is_dynamic": false,
+      "handshape_note": "四指并拢伸直，拇指横贴掌心",
+      "confusable_with": []
+    },
+    {
+      "id": "asl_letter_c",
+      "letter": "C",
+      "is_dynamic": false,
+      "handshape_note": "手弯成C形",
+      "confusable_with": [
+        "O"
+      ]
+    },
+    {
+      "id": "asl_letter_d",
+      "letter": "D",
+      "is_dynamic": false,
+      "handshape_note": "食指竖直，其余指与拇指成圈",
+      "confusable_with": [
+        "Z",
+        "F"
+      ]
+    },
+    {
+      "id": "asl_letter_e",
+      "letter": "E",
+      "is_dynamic": false,
+      "handshape_note": "四指弯曲压在拇指上",
+      "confusable_with": [
+        "A",
+        "S",
+        "O"
+      ]
+    },
+    {
+      "id": "asl_letter_f",
+      "letter": "F",
+      "is_dynamic": false,
+      "handshape_note": "拇指食指成圈，其余三指伸直",
+      "confusable_with": [
+        "D"
+      ]
+    },
+    {
+      "id": "asl_letter_g",
+      "letter": "G",
+      "is_dynamic": false,
+      "handshape_note": "食指与拇指平行横指",
+      "confusable_with": [
+        "H",
+        "Q"
+      ]
+    },
+    {
+      "id": "asl_letter_h",
+      "letter": "H",
+      "is_dynamic": false,
+      "handshape_note": "食指中指并拢横指",
+      "confusable_with": [
+        "G",
+        "U"
+      ]
+    },
+    {
+      "id": "asl_letter_i",
+      "letter": "I",
+      "is_dynamic": false,
+      "handshape_note": "小指竖起，余握拳",
+      "confusable_with": [
+        "J",
+        "Y"
+      ]
+    },
+    {
+      "id": "asl_letter_j",
+      "letter": "J",
+      "is_dynamic": true,
+      "handshape_note": "I手形，小指在空中画J",
+      "confusable_with": [
+        "I"
+      ]
+    },
+    {
+      "id": "asl_letter_k",
+      "letter": "K",
+      "is_dynamic": false,
+      "handshape_note": "食指中指成V，拇指抵中指中节",
+      "confusable_with": [
+        "V",
+        "P"
+      ]
+    },
+    {
+      "id": "asl_letter_l",
+      "letter": "L",
+      "is_dynamic": false,
+      "handshape_note": "拇指食指成L",
+      "confusable_with": [
+        "G"
+      ]
+    },
+    {
+      "id": "asl_letter_m",
+      "letter": "M",
+      "is_dynamic": false,
+      "handshape_note": "拇指压在三指（食中无名）下",
+      "confusable_with": [
+        "N",
+        "T",
+        "S",
+        "A"
+      ]
+    },
+    {
+      "id": "asl_letter_n",
+      "letter": "N",
+      "is_dynamic": false,
+      "handshape_note": "拇指压在食指中指下",
+      "confusable_with": [
+        "M",
+        "T",
+        "S",
+        "A"
+      ]
+    },
+    {
+      "id": "asl_letter_o",
+      "letter": "O",
+      "is_dynamic": false,
+      "handshape_note": "五指聚成圆",
+      "confusable_with": [
+        "C",
+        "E"
+      ]
+    },
+    {
+      "id": "asl_letter_p",
+      "letter": "P",
+      "is_dynamic": false,
+      "handshape_note": "K手形朝下",
+      "confusable_with": [
+        "K",
+        "Q"
+      ]
+    },
+    {
+      "id": "asl_letter_q",
+      "letter": "Q",
+      "is_dynamic": false,
+      "handshape_note": "G手形朝下",
+      "confusable_with": [
+        "G",
+        "P"
+      ]
+    },
+    {
+      "id": "asl_letter_r",
+      "letter": "R",
+      "is_dynamic": false,
+      "handshape_note": "食指中指交叉",
+      "confusable_with": [
+        "U",
+        "V"
+      ]
+    },
+    {
+      "id": "asl_letter_s",
+      "letter": "S",
+      "is_dynamic": false,
+      "handshape_note": "拳头，拇指横压四指前",
+      "confusable_with": [
+        "A",
+        "T",
+        "M",
+        "N",
+        "E"
+      ]
+    },
+    {
+      "id": "asl_letter_t",
+      "letter": "T",
+      "is_dynamic": false,
+      "handshape_note": "拇指夹在食指中指之间",
+      "confusable_with": [
+        "M",
+        "N",
+        "S",
+        "A"
+      ]
+    },
+    {
+      "id": "asl_letter_u",
+      "letter": "U",
+      "is_dynamic": false,
+      "handshape_note": "食指中指并拢竖直",
+      "confusable_with": [
+        "R",
+        "V",
+        "H"
+      ]
+    },
+    {
+      "id": "asl_letter_v",
+      "letter": "V",
+      "is_dynamic": false,
+      "handshape_note": "食指中指分开竖直",
+      "confusable_with": [
+        "U",
+        "R",
+        "K"
+      ]
+    },
+    {
+      "id": "asl_letter_w",
+      "letter": "W",
+      "is_dynamic": false,
+      "handshape_note": "食中无名三指分开竖直",
+      "confusable_with": [
+        "V"
+      ]
+    },
+    {
+      "id": "asl_letter_x",
+      "letter": "X",
+      "is_dynamic": false,
+      "handshape_note": "食指弯钩",
+      "confusable_with": [
+        "D"
+      ]
+    },
+    {
+      "id": "asl_letter_y",
+      "letter": "Y",
+      "is_dynamic": false,
+      "handshape_note": "拇指小指伸出",
+      "confusable_with": [
+        "I"
+      ]
+    },
+    {
+      "id": "asl_letter_z",
+      "letter": "Z",
+      "is_dynamic": true,
+      "handshape_note": "食指在空中画Z",
+      "confusable_with": [
+        "D"
+      ]
+    }
+  ]
+}

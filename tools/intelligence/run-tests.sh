@@ -30,7 +30,7 @@ sources=(NexusIntent NexusIntentRegression NexusRecall NexusEvidenceAudit NexusR
     NexusSkills NexusBuiltinSkills NexusSessionLibrary NexusDataVault NexusRecoveryPolicy
     NexusCognitiveControl NexusSelfContinuity NexusTaskService NexusSandboxTools NexusLinuxTool NexusWorkspaceIdentity NexusShuyu
     NexusLiveExecution NexusSkillPractice NexusEvaluation NexusPresence NexusRuntime
-    NexusOnDeviceAgent NexusRecovery NexusAutonomy NexusPermissions NexusApproval NexusTaskContract NexusRunMetrics ChatViewModel)
+    NexusOnDeviceAgent NexusRecovery NexusAutonomy NexusPermissions NexusApproval NexusTaskContract NexusRunMetrics ChatViewModel VoiceSignCore)
 for source in "${sources[@]}"; do
     cp "$repo_dir/ios-app/$source.swift" "$scratch_dir/Sources/$source.swift"
 done
@@ -42,7 +42,7 @@ test_files=(NexusIntentTests NexusRecallTests NexusEvidenceReviewTests
     NexusModelRoutingTests NexusWorkspaceTransactionTests NexusIntelligenceTests NexusTaskEpisodeTests
     NexusSessionLibraryTests NexusDataVaultTests NexusTaskServiceIntentTests NexusRecoveryTests NexusChatRecoveryTests
     NexusRetrievalExecutionTests NexusAgentCheckpointTests NexusToolGovernanceIntegrationTests
-    NexusIntentRecallPipelineTests NexusRetrievalEvidenceTests NexusCognitiveTests NexusOnDeviceAgentTests)
+    NexusIntentRecallPipelineTests NexusRetrievalEvidenceTests NexusCognitiveTests NexusOnDeviceAgentTests VoiceSignCoreTests)
 for test_file in "${test_files[@]}"; do
     source_test="$repo_dir/tests/ios/$test_file.swift"
     [[ -f "$source_test" ]] || { printf 'Required regression test missing: %s\n' "$source_test" >&2; exit 1; }
