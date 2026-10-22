@@ -4,7 +4,11 @@
 
 - `skill_market.py`：Python 参考实现（依赖 `cryptography` 的 Ed25519）。
 - `test_skill_market.py`：自测（18 项），密钥在运行时生成到临时目录。
-- `SkillMarketInterface.swift.draft`：Swift 接口草案（未编译，box 无 swift 工具链）。
+- `make_fixtures.py`：运行时生成 Swift/Python 共享 fixture（签名包 + Python 实跑判定），密钥只在临时目录。
+- Swift 实现：`ios-app/NexusSkillMarket.swift`（验签协议 `NexusSkillSignatureVerifier` + 校验/激活/回滚）。
+  Linux 底层：`tools/intelligence/Support/COpenSSL/ed25519.c`（libcrypto EVP，只验不签）+ `tools/intelligence/Tests/OpenSSLEd25519Verifier.swift`；
+  iOS 端换成 CryptoKit `Curve25519.Signing.PublicKey(rawRepresentation:).isValidSignature`。
+  XCTest：`tools/intelligence/Tests/NexusSkillMarketTests.swift`，随 `tools/intelligence/run-tests.sh` 全套回归运行。
 
 ## 运行自测
 ```
