@@ -346,6 +346,16 @@ final class BlackGodUITests: XCTestCase {
         XCTAssertTrue(login.waitForExistence(timeout: 10))
         // 该按钮初始位于底部「保存并使用」栏下方，直接点中心会落在保存栏上；先完整滚入可操作区。
         reveal(login, in: app)
+        // reveal 只看窗口边界；底部常驻「保存并使用」栏（约 y≥782）会盖住初始位于 y≈807–852 的按钮，
+        // 而 isHittable 仍可能为真，点击中心实际落到栏上。继续上推直到按钮完全在保存栏之上。
+        let saveBar = app.buttons["保存并使用"]
+        for _ in 0..<4 where saveBar.exists && login.frame.maxY > saveBar.frame.minY - 8 {
+            let scroll = app.scrollViews.firstMatch
+            scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+                .press(forDuration: 0.05, thenDragTo: scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)))
+            settle(login)
+        }
+        if saveBar.exists { XCTAssertLessThan(login.frame.maxY, saveBar.frame.minY, "Kimi 登录按钮仍被底部保存栏遮挡") }
         settle(login)
         login.press(forDuration: 0.15)
         // Anonymous authorization only. Never submit account details or consent.
