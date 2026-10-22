@@ -83,3 +83,8 @@ ios-app/AppStore/package*.json
 .runtime-build-tools/
 ios-app/Runtime/Libs/
 ios-app/Runtime/AlpineRootfs/
+
+# 技能市场：测试/本地密钥与运行时存储（绝不入库）
+tools/skill_market/.keys/
+tools/skill_market/.store/
+tools/skill_market/__pycache__/
