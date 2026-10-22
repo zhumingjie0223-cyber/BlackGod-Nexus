@@ -1,0 +1,244 @@
+[
+ {
+  "name": "出图拒绝",
+  "req": {
+   "input": "text",
+   "wantedOutput": "image",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": null,
+   "userConfirmed": true,
+   "onDeviceReady": true
+  },
+  "route": "refuse",
+  "leaves": false
+ },
+ {
+  "name": "出视频拒绝",
+  "req": {
+   "input": "video",
+   "wantedOutput": "video",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": null,
+   "userConfirmed": true,
+   "onDeviceReady": false
+  },
+  "route": "refuse",
+  "leaves": false
+ },
+ {
+  "name": "手语低置信重打",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": 0.5,
+   "userConfirmed": true,
+   "onDeviceReady": true,
+   "top2Margin": 0.3,
+   "handScore": 0.9
+  },
+  "route": "askRetry",
+  "leaves": false
+ },
+ {
+  "name": "手语未确认不代说",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": true,
+   "cloudMediaConsent": false,
+   "recognitionConfidence": 0.95,
+   "userConfirmed": false,
+   "onDeviceReady": true,
+   "top2Margin": 0.3,
+   "handScore": 0.9
+  },
+  "route": "needsConfirmation",
+  "leaves": false
+ },
+ {
+  "name": "手语确认后端上代说",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": false,
+   "cloudMediaConsent": false,
+   "recognitionConfidence": 0.95,
+   "userConfirmed": true,
+   "onDeviceReady": true,
+   "top2Margin": 0.3,
+   "handScore": 0.9
+  },
+  "route": "onDevice",
+  "leaves": false
+ },
+ {
+  "name": "语音转字幕端上",
+  "req": {
+   "input": "audio",
+   "wantedOutput": "text",
+   "online": false,
+   "cloudMediaConsent": false,
+   "recognitionConfidence": 0.9,
+   "userConfirmed": false,
+   "onDeviceReady": true
+  },
+  "route": "onDevice",
+  "leaves": false
+ },
+ {
+  "name": "图片未同意不上传",
+  "req": {
+   "input": "image",
+   "wantedOutput": "text",
+   "online": true,
+   "cloudMediaConsent": false,
+   "recognitionConfidence": null,
+   "userConfirmed": false,
+   "onDeviceReady": false
+  },
+  "route": "refuse",
+  "leaves": false
+ },
+ {
+  "name": "图片同意后走云",
+  "req": {
+   "input": "image",
+   "wantedOutput": "text",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": null,
+   "userConfirmed": false,
+   "onDeviceReady": false
+  },
+  "route": "cloud",
+  "leaves": true
+ },
+ {
+  "name": "文字端上未就绪走云不传媒体",
+  "req": {
+   "input": "text",
+   "wantedOutput": "text",
+   "online": true,
+   "cloudMediaConsent": false,
+   "recognitionConfidence": null,
+   "userConfirmed": false,
+   "onDeviceReady": false
+  },
+  "route": "cloud",
+  "leaves": false
+ },
+ {
+  "name": "离线且端上未就绪拒绝",
+  "req": {
+   "input": "text",
+   "wantedOutput": "speech",
+   "online": false,
+   "cloudMediaConsent": false,
+   "recognitionConfidence": null,
+   "userConfirmed": false,
+   "onDeviceReady": false
+  },
+  "route": "refuse",
+  "leaves": false
+ },
+ {
+  "name": "手语0.84低于0.85重打",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": 0.84,
+   "userConfirmed": true,
+   "onDeviceReady": true,
+   "top2Margin": 0.3,
+   "handScore": 0.9
+  },
+  "route": "askRetry",
+  "leaves": false
+ },
+ {
+  "name": "手语分差不足重打",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": 0.95,
+   "userConfirmed": true,
+   "onDeviceReady": true,
+   "top2Margin": 0.1,
+   "handScore": 0.9
+  },
+  "route": "askRetry",
+  "leaves": false
+ },
+ {
+  "name": "手语缺分差重打",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": 0.95,
+   "userConfirmed": true,
+   "onDeviceReady": true,
+   "top2Margin": null,
+   "handScore": 0.9
+  },
+  "route": "askRetry",
+  "leaves": false
+ },
+ {
+  "name": "手部分数不足重打",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": 0.95,
+   "userConfirmed": true,
+   "onDeviceReady": true,
+   "top2Margin": 0.3,
+   "handScore": 0.4
+  },
+  "route": "askRetry",
+  "leaves": false
+ },
+ {
+  "name": "缺手部分数重打",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": 0.95,
+   "userConfirmed": true,
+   "onDeviceReady": true,
+   "top2Margin": 0.3,
+   "handScore": null
+  },
+  "route": "askRetry",
+  "leaves": false
+ },
+ {
+  "name": "手语三项达标且已确认端上代说",
+  "req": {
+   "input": "signVideo",
+   "wantedOutput": "speech",
+   "online": true,
+   "cloudMediaConsent": true,
+   "recognitionConfidence": 0.85,
+   "userConfirmed": true,
+   "onDeviceReady": true,
+   "top2Margin": 0.15,
+   "handScore": 0.5
+  },
+  "route": "onDevice",
+  "leaves": false
+ }
+]
