@@ -21,6 +21,14 @@ final class NexusOnDeviceAgentTests: XCTestCase {
         XCTAssertTrue(t.speakRequiresUserConfirm)
     }
 
+    func testUnknownStatusRefusedToLoad() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("bad_thresholds.json")
+        let bad = try String(contentsOfFile: root + "/config/gates/asl_reject_thresholds.json", encoding: .utf8)
+            .replacingOccurrences(of: "\"status\":\"provisional\"", with: "\"status\":\"draft\"")
+        try bad.write(to: url, atomically: true, encoding: .utf8)
+        XCTAssertThrowsError(try NexusRejectThresholds.load(from: url))
+    }
+
     func testDecisionTableFixture() throws {
         let t = try thresholds()
         let data = try Data(contentsOf: URL(fileURLWithPath: root + "/tests/fixtures/ondevice-agent-cases.json"))

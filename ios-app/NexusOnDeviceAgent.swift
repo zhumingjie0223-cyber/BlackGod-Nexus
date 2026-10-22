@@ -41,8 +41,12 @@ struct NexusRejectThresholds: Codable, Equatable {
         case onReject = "on_reject", speakRequiresUserConfirm = "speak_requires_user_confirm"
     }
     static func load(from url: URL) throws -> NexusRejectThresholds {
-        try JSONDecoder().decode(NexusRejectThresholds.self, from: Data(contentsOf: url))
+        let t = try JSONDecoder().decode(NexusRejectThresholds.self, from: Data(contentsOf: url))
+        // fail-closed：status 只认 provisional / calibrated，其余拒绝启用。
+        guard ["provisional", "calibrated"].contains(t.status) else { throw StatusError.unsupported(t.status) }
+        return t
     }
+    enum StatusError: Error { case unsupported(String) }
 }
 
 struct NexusOnDeviceDecision: Codable, Equatable {
