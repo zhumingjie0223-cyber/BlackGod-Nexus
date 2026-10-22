@@ -289,9 +289,10 @@ final class BlackGodUITests: XCTestCase {
         reveal(login, in: app)
         XCTAssertTrue(login.isEnabled)
         // 点击文字左侧的按钮留白，验证整个可见按钮均可启动真实授权。
+        settle(login)
         login.coordinate(withNormalizedOffset: CGVector(dx: 0.08, dy: 0.5)).tap()
         let close = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@ OR label == %@ OR label == %@ OR label == %@", "关闭", "Close", "取消", "Cancel", "Done")).firstMatch
-        guard close.waitForExistence(timeout: 25) else {
+        guard close.waitForExistence(timeout: 60) else {
             XCTFail("点击按钮留白后未出现官方授权页面：" + app.debugDescription)
             return
         }
@@ -299,7 +300,8 @@ final class BlackGodUITests: XCTestCase {
         let status = app.staticTexts["oauth.status"]
         // 系统授权页关闭后文案可能略有差异，以含「取消」为准。
         expectation(for: NSPredicate(format: "label CONTAINS %@", "取消"), evaluatedWith: status)
-        waitForExpectations(timeout: 15)
+        // CI 模拟器在 Safari 关闭后可能长时间不空闲（实测等待空闲 >40s），15s 不足。
+        waitForExpectations(timeout: 45)
         XCTAssertTrue(login.isEnabled)
     }
 
@@ -344,10 +346,17 @@ final class BlackGodUITests: XCTestCase {
         XCTAssertTrue(login.waitForExistence(timeout: 10))
         // 该按钮初始位于底部「保存并使用」栏下方，直接点中心会落在保存栏上；先完整滚入可操作区。
         reveal(login, in: app)
+        settle(login)
         login.press(forDuration: 0.15)
         // Anonymous authorization only. Never submit account details or consent.
+        // 设备授权要先向服务商取设备码再开页面；CI 模拟器很慢，给足时间，并在失败时带出状态文案便于定位。
         let close = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@ OR label == %@ OR label == %@ OR label == %@", "关闭", "Close", "取消", "Cancel", "Done")).firstMatch
-        XCTAssertTrue(close.waitForExistence(timeout: 25)); close.tap()
+        guard close.waitForExistence(timeout: 60) else {
+            let status = app.staticTexts["oauth.status"]
+            XCTFail("设备授权页面未打开；oauth.status=\(status.exists ? status.label : "<无>")，oauth.cancel 存在=\(app.buttons["oauth.cancel"].exists)")
+            return
+        }
+        close.tap()
         let cancel = app.buttons["oauth.cancel"]
         XCTAssertTrue(cancel.waitForExistence(timeout: 10))
         XCTAssertFalse(login.isEnabled)
@@ -743,6 +752,18 @@ extension XCTestCase {
     /// 列表/表单页面只渲染可见区域；页面变长后需要先滑到元素处再断言，否则不是功能缺陷而是查找失败。
     /// 用短距离拖动代替整屏 swipe：整屏 swipeDown 会把以 sheet 弹出的页面直接关掉。
     @MainActor
+    /// reveal 的拖动会带惯性；滚动未停时的首次触摸只会停住滚动而不触发按钮。等元素位置稳定再点。
+    func settle(_ element: XCUIElement, timeout: TimeInterval = 5) {
+        var last = element.frame
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.3))
+            let now = element.frame
+            if now == last { return }
+            last = now
+        }
+    }
+
     func reveal(_ element: XCUIElement, in app: XCUIApplication, upSwipes: Int = 6, downSwipes: Int = 8, file: StaticString = #filePath, line: UInt = #line) {
         func contentBounds() -> CGRect {
             let window = app.windows.firstMatch.frame
